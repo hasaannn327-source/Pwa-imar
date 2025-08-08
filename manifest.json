@@ -1,72 +1,50 @@
 {
-  "name": "Gelişmiş İmar Hesaplayıcısı Pro",
-  "short_name": "İmarPro",
-  "description": "Profesyonel İmar Hesaplamaları ve 3D Görselleştirme",
-  "start_url": "./index.html",
+  "name": "İmar Hesaplayıcısı Pro",
+  "short_name": "İmarHesap",
+  "description": "Profesyonel İmar Hesaplamaları, 3D Görselleştirme ve Detaylı Analizler",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#667eea",
+  "background_color": "#667eea",
+  "theme_color": "#2563eb",
   "orientation": "portrait-primary",
-  "scope": "./",
+  "categories": ["productivity", "utilities", "business"],
   "lang": "tr",
   "dir": "ltr",
-  "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "72x72",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "96x96",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "128x128",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "144x144",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "152x152",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23667eea'/><text x='96' y='120' font-size='100' text-anchor='middle' fill='white'>🏗️</text></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
-      "sizes": "384x384",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏗️%3C/text%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23667eea'/><text x='256' y='320' font-size='280' text-anchor='middle' fill='white'>🏗️</text></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [
+  "shortcuts": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='540' height='720' viewBox='0 0 540 720'%3E%3Crect width='540' height='720' fill='%23667eea'/%3E%3Ctext x='270' y='360' text-anchor='middle' fill='white' font-size='48'%3E🏗️ İmar Hesaplayıcısı%3C/text%3E%3C/svg%3E",
-      "sizes": "540x720",
-      "type": "image/svg+xml",
-      "form_factor": "narrow"
+      "name": "Hızlı Hesaplama",
+      "short_name": "Hesapla",
+      "description": "Doğrudan hesaplama sayfasını aç",
+      "url": "/",
+      "icons": [
+        {
+          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='.9em' font-size='90'>⚡</text></svg>",
+          "sizes": "96x96"
+        }
+      ]
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }
