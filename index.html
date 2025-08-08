@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gelişmiş İmar Hesaplayıcısı</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+      <h1>🏗️ Gelişmiş İmar Hesaplayıcısı</h1>
+      <p>İmar hesapları, daire planı, TAKS/KAKS, kat analizi ve 3D yapı görselleştirme içerir.</p>
+    </div>
+
+    <div class="form">
+      <label>Arsa Alanı (m²): <input type="number" id="plotArea" value="500" /></label>
+      <label>TAKS: <input type="number" id="taks" step="0.01" value="0.4" /></label>
+      <label>KAKS: <input type="number" id="kaks" step="0.1" value="1.6" /></label>
+      <label>Çekme Mesafesi (Toplam m): <input type="number" id="setback" step="0.5" value="10" /></label>
+      <label>Kat Sayısı: <input type="number" id="floors" value="4" /></label>
+      <label>Daire Alanı (m²): <input type="number" id="apartmentArea" value="80" /></label>
+      <button onclick="calculate()">🧮 Hesapla</button>
+    </div>
+
+    <div id="result"></div>
+    <div class="building-3d" id="building3d"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
