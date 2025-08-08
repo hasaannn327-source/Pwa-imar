@@ -735,7 +735,29 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('❌ Calculator başlatma hatası:', error);
     }
-    
+
+    // Bölge profilleri veri seti
+const bolgeProfilleri = {
+    istanbul: { taks: 0.4, kaks: 2.0, setback: 5 },
+    izmir: { taks: 0.3, kaks: 1.6, setback: 4 },
+    ankara: { taks: 0.35, kaks: 1.8, setback: 5 }
+};
+
+// Bölge seçildiğinde inputları otomatik doldur
+const regionSelect = document.getElementById('regionSelect');
+if (regionSelect) {
+    regionSelect.addEventListener('change', function () {
+        const secilen = bolgeProfilleri[this.value];
+        if (secilen) {
+            if (document.getElementById('taks')) document.getElementById('taks').value = secilen.taks;
+            if (document.getElementById('kaks')) document.getElementById('kaks').value = secilen.kaks;
+            if (document.getElementById('setback')) document.getElementById('setback').value = secilen.setback;
+            if (window.calculator) {
+                window.calculator.validateAndCalculate();
+            }
+        }
+    });
+}
     // Service Worker kaydı
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
