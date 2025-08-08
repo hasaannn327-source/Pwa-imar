@@ -1,34 +1,1005 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gelişmiş İmar Hesaplayıcısı</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="manifest.json" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gelişmiş İmar Hesaplayıcısı Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+        }
+
+        [data-theme="dark"] {
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --border-color: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #f0f9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--bg-primary);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input.error {
+            border-color: var(--error-color);
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calculate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .calculate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-section {
+            margin-bottom: 25px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .building-3d {
+            background: var(--bg-secondary);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floor-container {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            gap: 3px;
+            animation: buildingRise 1s ease-out;
+        }
+
+        @keyframes buildingRise {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .floor-box {
+            width: 80px;
+            height: 25px;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            animation: floorPop 0.3s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .floor-box:nth-child(1) { animation-delay: 0.1s; }
+        .floor-box:nth-child(2) { animation-delay: 0.2s; }
+        .floor-box:nth-child(3) { animation-delay: 0.3s; }
+        .floor-box:nth-child(4) { animation-delay: 0.4s; }
+        .floor-box:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes floorPop {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .floor-box::after {
+            content: attr(data-units);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+
+        .warning-box h4 {
+            color: var(--warning-color);
+            margin-bottom: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--primary-color);
+            background: transparent;
+            color: var(--primary-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .export-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
-      <h1>🏗️ Gelişmiş İmar Hesaplayıcısı</h1>
-      <p>İmar hesapları, daire planı, TAKS/KAKS, kat analizi ve 3D yapı görselleştirme içerir.</p>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <h1>🏗️ İmar Hesaplayıcısı Pro</h1>
+            <p class="subtitle">Profesyonel İmar Hesaplamaları, 3D Görselleştirme ve Detaylı Analizler</p>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('basic')">📐 Temel Bilgiler</button>
+                <button class="tab" onclick="switchTab('advanced')">⚙️ Gelişmiş</button>
+            </div>
+
+            <div id="basic-tab" class="tab-content active">
+                <div class="form-section">
+                    <h3 class="section-title">📏 Arsa Bilgileri</h3>
+                    <div class="input-group">
+                        <label>Arsa Alanı (m²)</label>
+                        <input type="number" id="plotArea" value="500" min="50" max="50000" onchange="validateAndCalculate()">
+                        <div class="error-message" id="plotArea-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>TAKS (Taban Alanı Katsayısı)</label>
+                        <input type="number" id="taks" value="0.40" step="0.01" min="0.1" max="1.0" onchange="validateAndCalculate()">
+                        <div class="error-message" id="taks-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>KAKS (Kat Alanı Katsayısı)</label>
+                        <input type="number" id="kaks" value="1.60" step="0.1" min="0.1" max="5.0" onchange="validateAndCalculate()">
+                        <div class="error-message" id="kaks-error"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">🏠 Yapı Bilgileri</h3>
+                    <div class="input-group">
+                        <label>Çekme Mesafesi - Toplam (m)</label>
+                        <input type="number" id="setback" value="10" step="0.5" min="0" max="100" onchange="validateAndCalculate()">
+                        <div class="error-message" id="setback-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Kat Sayısı</label>
+                        <input type="number" id="floors" value="4" min="1" max="20" onchange="validateAndCalculate()">
+                        <div class="error-message" id="floors-error"></div>
+                    </div>
+                    <div class="input-group">
+                        <label>Daire Alanı (m²)</label>
+                        <input type="number" id="apartmentArea" value="80" min="30" max="500" onchange="validateAndCalculate()">
+                        <div class="error-message" id="apartmentArea-error"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="advanced-tab" class="tab-content">
+                <div class="form-section">
+                    <h3 class="section-title">🔧 Gelişmiş Ayarlar</h3>
+                    <div class="input-group">
+                        <label>Yapı Yükseklik Sınırı (m)</label>
+                        <input type="number" id="maxHeight" value="15" step="0.5" min="5" max="100" onchange="validateAndCalculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Otopark Katsayısı (daire başına)</label>
+                        <input type="number" id="parkingRatio" value="1" step="0.1" min="0" max="5" onchange="validateAndCalculate()">
+                    </div>
+                    <div class="input-group">
+                        <label>Ortak Alan Oranı (%)</label>
+                        <input type="number" id="commonAreaRatio" value="20" min="0" max="50" onchange="validateAndCalculate()">
+                    </div>
+                </div>
+            </div>
+
+            <button class="calculate-btn" onclick="calculate()" id="calculateBtn">
+                🧮 Detaylı Hesaplama Yap
+            </button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Hesaplamalar yapılıyor...</p>
+            </div>
+        </div>
+
+        <div class="card results-container" id="resultsContainer">
+            <div class="tabs">
+                <button class="tab active" onclick="switchResultTab('summary')">📊 Özet</button>
+                <button class="tab" onclick="switchResultTab('detailed')">📋 Detay</button>
+                <button class="tab" onclick="switchResultTab('analysis')">🔍 Analiz</button>
+            </div>
+
+            <div id="summary-result" class="tab-content active">
+                <div class="result-section">
+                    <h3 class="section-title">📐 Temel Ölçümler</h3>
+                    <div class="result-grid" id="basicResults"></div>
+                </div>
+
+                <div class="result-section">
+                    <h3 class="section-title">🏗️ 3D Bina Görselleştirme</h3>
+                    <div class="building-3d" id="building3d">
+                        <p style="color: var(--text-secondary);">Hesaplama sonrası görüntülenecek</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="detailed-result" class="tab-content">
+                <div class="result-section" id="detailedResults"></div>
+            </div>
+
+            <div id="analysis-result" class="tab-content">
+                <div class="result-section" id="analysisResults"></div>
+            </div>
+
+            <div class="export-buttons">
+                <button class="export-btn" onclick="exportToPDF()">📄 PDF İndir</button>
+                <button class="export-btn" onclick="exportToExcel()">📊 Excel İndir</button>
+                <button class="export-btn" onclick="shareResults()">🔗 Paylaş</button>
+            </div>
+        </div>
     </div>
 
-    <div class="form">
-      <label>Arsa Alanı (m²): <input type="number" id="plotArea" value="500" /></label>
-      <label>TAKS: <input type="number" id="taks" step="0.01" value="0.4" /></label>
-      <label>KAKS: <input type="number" id="kaks" step="0.1" value="1.6" /></label>
-      <label>Çekme Mesafesi (Toplam m): <input type="number" id="setback" step="0.5" value="10" /></label>
-      <label>Kat Sayısı: <input type="number" id="floors" value="4" /></label>
-      <label>Daire Alanı (m²): <input type="number" id="apartmentArea" value="80" /></label>
-      <button onclick="calculate()">🧮 Hesapla</button>
-    </div>
+    <script>
+        class ImarCalculator {
+            constructor() {
+                this.results = {};
+                this.initializeElements();
+                this.loadSavedData();
+                this.validateAndCalculate();
+            }
 
-    <div id="result"></div>
-    <div class="building-3d" id="building3d"></div>
-  </div>
+            initializeElements() {
+                this.elements = {
+                    plotArea: document.getElementById('plotArea'),
+                    taks: document.getElementById('taks'),
+                    kaks: document.getElementById('kaks'),
+                    setback: document.getElementById('setback'),
+                    floors: document.getElementById('floors'),
+                    apartmentArea: document.getElementById('apartmentArea'),
+                    maxHeight: document.getElementById('maxHeight'),
+                    parkingRatio: document.getElementById('parkingRatio'),
+                    commonAreaRatio: document.getElementById('commonAreaRatio')
+                };
+            }
 
-  <script src="app.js"></script>
+            validateInput(id, value, min, max, errorMsg) {
+                const element = document.getElementById(id);
+                const errorElement = document.getElementById(id + '-error');
+                
+                if (!errorElement) return true;
+
+                if (isNaN(value) || value < min || value > max) {
+                    element.classList.add('error');
+                    errorElement.textContent = errorMsg;
+                    errorElement.style.display = 'block';
+                    return false;
+                } else {
+                    element.classList.remove('error');
+                    errorElement.style.display = 'none';
+                    return true;
+                }
+            }
+
+            validateAllInputs() {
+                const validations = [
+                    this.validateInput('plotArea', parseFloat(this.elements.plotArea.value), 50, 50000, 'Arsa alanı 50-50000 m² arası olmalı'),
+                    this.validateInput('taks', parseFloat(this.elements.taks.value), 0.1, 1.0, 'TAKS 0.1-1.0 arası olmalı'),
+                    this.validateInput('kaks', parseFloat(this.elements.kaks.value), 0.1, 5.0, 'KAKS 0.1-5.0 arası olmalı'),
+                    this.validateInput('floors', parseInt(this.elements.floors.value), 1, 20, 'Kat sayısı 1-20 arası olmalı'),
+                    this.validateInput('apartmentArea', parseFloat(this.elements.apartmentArea.value), 30, 500, 'Daire alanı 30-500 m² arası olmalı')
+                ];
+
+                return validations.every(v => v);
+            }
+
+            calculate() {
+                if (!this.validateAllInputs()) {
+                    return;
+                }
+
+                this.showLoading();
+
+                setTimeout(() => {
+                    const area = parseFloat(this.elements.plotArea.value);
+                    const taks = parseFloat(this.elements.taks.value);
+                    const kaks = parseFloat(this.elements.kaks.value);
+                    const setback = parseFloat(this.elements.setback.value);
+                    const floors = parseInt(this.elements.floors.value);
+                    const apartmentArea = parseFloat(this.elements.apartmentArea.value);
+                    const maxHeight = parseFloat(this.elements.maxHeight.value) || 15;
+                    const parkingRatio = parseFloat(this.elements.parkingRatio.value) || 1;
+                    const commonAreaRatio = parseFloat(this.elements.commonAreaRatio.value) || 20;
+
+                    // Çekme mesafesini dört yönden düş
+                    const setbackArea = this.calculateSetbackArea(area, setback);
+                    const netBuildableArea = area - setbackArea;
+                    
+                    // Temel hesaplamalar
+                    const maxBaseArea = area * taks;
+                    const maxTotalArea = area * kaks;
+                    const actualBaseArea = Math.min(maxBaseArea, netBuildableArea);
+                    
+                    // Kat yüksekliği kontrolü
+                    const maxFloorsFromHeight = Math.floor(maxHeight / 3); // 3m kat yüksekliği
+                    const actualFloors = Math.min(floors, maxFloorsFromHeight);
+                    
+                    // Daire hesaplamaları
+                    const maxUnits = Math.floor(maxTotalArea / apartmentArea);
+                    const unitsPerFloor = Math.max(1, Math.floor(maxUnits / actualFloors));
+                    const totalUnits = unitsPerFloor * actualFloors;
+                    
+                    // Otopark hesaplaması
+                    const requiredParkingSpots = Math.ceil(totalUnits * parkingRatio);
+                    const parkingArea = requiredParkingSpots * 25; // 25 m² per spot
+                    
+                    // Ortak alan hesaplaması
+                    const totalGrossArea = totalUnits * apartmentArea;
+                    const commonArea = totalGrossArea * (commonAreaRatio / 100);
+
+                    this.results = {
+                        basic: {
+                            area,
+                            taks,
+                            kaks,
+                            setback,
+                            netBuildableArea,
+                            maxBaseArea,
+                            actualBaseArea,
+                            maxTotalArea,
+                            actualFloors,
+                            totalUnits,
+                            unitsPerFloor,
+                            apartmentArea
+                        },
+                        advanced: {
+                            maxHeight,
+                            parkingRatio,
+                            commonAreaRatio,
+                            requiredParkingSpots,
+                            parkingArea,
+                            commonArea,
+                            totalGrossArea,
+                            setbackArea
+                        },
+                        analysis: this.generateAnalysis()
+                    };
+
+                    this.hideLoading();
+                    this.displayResults();
+                    this.create3DVisualization();
+                    this.saveData();
+                }, 1000);
+            }
+
+            calculateSetbackArea(totalArea, setback) {
+                // Karesel arsa varsayımı ile çekme alanı hesaplama
+                const sideLength = Math.sqrt(totalArea);
+                const netSideLength = Math.max(0, sideLength - (setback * 2));
+                const netArea = netSideLength * netSideLength;
+                return totalArea - netArea;
+            }
+
+            generateAnalysis() {
+                const basic = this.results?.basic || {};
+                const advanced = this.results?.advanced || {};
+                
+                const efficiency = (basic.actualBaseArea / basic.maxBaseArea * 100).toFixed(1);
+                const utilizationRate = (basic.totalUnits * basic.apartmentArea / basic.maxTotalArea * 100).toFixed(1);
+                
+                const warnings = [];
+                const recommendations = [];
+
+                if (basic.taks > 0.6) {
+                    warnings.push("Yüksek TAKS değeri - Yeşil alan oranını kontrol edin");
+                }
+                
+                if (basic.kaks > 2.0) {
+                    warnings.push("Yüksek KAKS değeri - Altyapı kapasitesini değerlendirin");
+                }
+
+                if (efficiency < 80) {
+                    recommendations.push("Arsa verimliliği artırılabilir - Plan düzenlemesi önerilir");
+                }
+
+                return {
+                    efficiency: parseFloat(efficiency),
+                    utilizationRate: parseFloat(utilizationRate),
+                    warnings,
+                    recommendations
+                };
+            }
+
+            displayResults() {
+                this.displayBasicResults();
+                this.displayDetailedResults();
+                this.displayAnalysisResults();
+                
+                document.getElementById('resultsContainer').classList.add('show');
+            }
+
+            displayBasicResults() {
+                const container = document.getElementById('basicResults');
+                const { basic } = this.results;
+                
+                container.innerHTML = `
+                    <div class="result-item">
+                        <div class="result-value">${basic.netBuildableArea.toFixed(0)}</div>
+                        <div class="result-label">Net Yapılaşabilir Alan (m²)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${basic.actualBaseArea.toFixed(0)}</div>
+                        <div class="result-label">Taban Alanı (m²)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${basic.maxTotalArea.toFixed(0)}</div>
+                        <div class="result-label">Toplam İnşaat Alanı (m²)</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${basic.totalUnits}</div>
+                        <div class="result-label">Toplam Daire Sayısı</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${basic.unitsPerFloor}</div>
+                        <div class="result-label">Kat Başına Daire</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-value">${basic.actualFloors}</div>
+                        <div class="result-label">Maks. Kat Sayısı</div>
+                    </div>
+                `;
+            }
+
+            displayDetailedResults() {
+                const container = document.getElementById('detailedResults');
+                const { basic, advanced } = this.results;
+                
+                container.innerHTML = `
+                    <h3 class="section-title">🔍 Detaylı Hesaplamalar</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-value">${advanced.setbackArea.toFixed(0)}</div>
+                            <div class="result-label">Çekme Alanı (m²)</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value">${advanced.requiredParkingSpots}</div>
+                            <div class="result-label">Gerekli Otopark</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value">${advanced.parkingArea.toFixed(0)}</div>
+                            <div class="result-label">Otopark Alanı (m²)</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value">${advanced.commonArea.toFixed(0)}</div>
+                            <div class="result-label">Ortak Alan (m²)</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value">${advanced.totalGrossArea.toFixed(0)}</div>
+                            <div class="result-label">Toplam Brüt Alan (m²)</div>
+                        </div>
+                    </div>
+                `;
+						}
+					if (analysis.recommendations.length > 0) {
+                    recommendationsHtml = `
+                        <div style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--success-color); padding: 15px; border-radius: var(--border-radius); margin-top: 15px;">
+                            <h4 style="color: var(--success-color); margin-bottom: 5px;">💡 Öneriler</h4>
+                            ${analysis.recommendations.map(r => `<p>• ${r}</p>`).join('')}
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = `
+                    <h3 class="section-title">📈 Performans Analizi</h3>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-value">${analysis.efficiency}%</div>
+                            <div class="result-label">Arsa Verimliliği</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value">${analysis.utilizationRate}%</div>
+                            <div class="result-label">KAKS Kullanım Oranı</div>
+                        </div>
+                    </div>
+                    ${warningsHtml}
+                    ${recommendationsHtml}
+                `;
+            }
+
+            create3DVisualization() {
+                const container = document.getElementById('building3d');
+                const { basic } = this.results;
+                
+                container.innerHTML = '';
+                
+                const floorContainer = document.createElement('div');
+                floorContainer.className = 'floor-container';
+                
+                for (let i = 0; i < basic.actualFloors; i++) {
+                    const floor = document.createElement('div');
+                    floor.className = 'floor-box';
+                    floor.setAttribute('data-units', basic.unitsPerFloor);
+                    floorContainer.appendChild(floor);
+                }
+                
+                container.appendChild(floorContainer);
+                
+                // Building info
+                const info = document.createElement('div');
+                info.style.cssText = 'margin-top: 20px; text-align: center; color: var(--text-secondary); font-size: 0.9rem;';
+                info.innerHTML = `
+                    <strong>${basic.actualFloors} Kat • ${basic.totalUnits} Daire</strong><br>
+                    Kat başına ${basic.unitsPerFloor} daire
+                `;
+                container.appendChild(info);
+            }
+
+            showLoading() {
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('calculateBtn').disabled = true;
+            }
+
+            hideLoading() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('calculateBtn').disabled = false;
+            }
+
+            saveData() {
+                const data = {
+                    inputs: Object.keys(this.elements).reduce((acc, key) => {
+                        acc[key] = this.elements[key].value;
+                        return acc;
+                    }, {}),
+                    results: this.results,
+                    timestamp: new Date().toISOString()
+                };
+                
+                // Memory storage for session
+                window.imarCalculatorData = data;
+            }
+
+            loadSavedData() {
+                const data = window.imarCalculatorData;
+                if (data && data.inputs) {
+                    Object.keys(data.inputs).forEach(key => {
+                        if (this.elements[key]) {
+                            this.elements[key].value = data.inputs[key];
+                        }
+                    });
+                }
+            }
+
+            validateAndCalculate() {
+                if (this.validateAllInputs()) {
+                    this.calculate();
+                }
+            }
+        }
+
+        // Global functions
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            root.setAttribute('data-theme', newTheme);
+            
+            const button = document.querySelector('.theme-toggle');
+            button.innerHTML = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            
+            // Save theme preference
+            window.themePreference = newTheme;
+        }
+
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function switchResultTab(tabName) {
+            // Hide all result tab contents
+            document.querySelectorAll('#resultsContainer .tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all result tabs
+            document.querySelectorAll('#resultsContainer .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected result tab content
+            document.getElementById(tabName + '-result').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function calculate() {
+            window.calculator.calculate();
+        }
+
+        function validateAndCalculate() {
+            window.calculator.validateAndCalculate();
+        }
+
+        function exportToPDF() {
+            const results = window.calculator.results;
+            if (!results) return;
+            
+            // Create a simple text report
+            let report = `İMAR HESAPLAMA RAPORU\n`;
+            report += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n\n`;
+            report += `TEMEL BİLGİLER:\n`;
+            report += `Arsa Alanı: ${results.basic.area} m²\n`;
+            report += `TAKS: ${results.basic.taks}\n`;
+            report += `KAKS: ${results.basic.kaks}\n`;
+            report += `Kat Sayısı: ${results.basic.actualFloors}\n`;
+            report += `Toplam Daire: ${results.basic.totalUnits}\n`;
+            report += `\nDETAYLAR:\n`;
+            report += `Net Yapılaşabilir Alan: ${results.basic.netBuildableArea.toFixed(0)} m²\n`;
+            report += `Maksimum İnşaat Alanı: ${results.basic.maxTotalArea.toFixed(0)} m²\n`;
+            report += `Otopark Gereksinimi: ${results.advanced.requiredParkingSpots} adet\n`;
+            
+            // Create download link
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `imar_raporu_${new Date().getTime()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToExcel() {
+            alert('Excel export özelliği yakında gelecek!');
+        }
+
+        function shareResults() {
+            if (navigator.share) {
+                const results = window.calculator.results;
+                navigator.share({
+                    title: 'İmar Hesaplama Sonuçları',
+                    text: `Arsa: ${results.basic.area}m² | Daire: ${results.basic.totalUnits} adet | TAKS: ${results.basic.taks} | KAKS: ${results.basic.kaks}`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback for browsers without Web Share API
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Link panoya kopyalandı!');
+                });
+            }
+        }
+
+        // Initialize app
+        window.addEventListener('DOMContentLoaded', () => {
+            // Load saved theme
+            if (window.themePreference) {
+                document.documentElement.setAttribute('data-theme', window.themePreference);
+                const button = document.querySelector('.theme-toggle');
+                button.innerHTML = window.themePreference === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+            }
+            
+            // Initialize calculator
+            window.calculator = new ImarCalculator();
+        });
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
