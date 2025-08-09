@@ -1,7 +1,7 @@
 {
   "name": "İmar Hesaplayıcısı Pro",
   "short_name": "İmarHesap",
-  "description": "Profesyonel İmar Hesaplamaları, 3D Görselleştirme ve Detaylı Analizler",
+  "description": "Profesyonel İmar Hesaplamaları ve Detaylı Analizler",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#667eea",
@@ -37,14 +37,5 @@
         }
       ]
     }
-  ],
-  "share_target": {
-    "action": "/share",
-    "method": "GET",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+  ]
 }
