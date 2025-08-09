@@ -557,4 +557,111 @@ function updateVisualization() {
     buildingVisual.innerHTML = svg;
 }
 
-// Kat planı görs
+// Kat planı gö
+function updateFloorPlan() {
+    const floorPlan = document.getElementById('floorPlan');
+    
+    if (selectedApartmentTypes.length === 0) {
+        floorPlan.innerHTML = '<p style="text-align:center; padding:100px 20px; color: #6b7280;">Daire tipi seçildikten sonra görüntülenecek</p>';
+        return;
+    }
+    
+    let svg = `<svg width="100%" height="100%" viewBox="0 0 300 280" style="background: #f8f9fa;">
+        <text x="150" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#1f2937">
+            📐 Tipik Kat Planı
+        </text>`;
+    
+    let currentY = 40;
+    selectedApartmentTypes.forEach((apt, index) => {
+        const roomCount = apartmentTypes[apt.type]?.rooms || 2;
+        const width = Math.min(120, Math.sqrt(apt.area) * 2);
+        const height = Math.min(60, apt.area / width * 0.6);
+        
+        // Daire ana çerçevesi
+        svg += `<rect x="50" y="${currentY}" width="${width}" height="${height}" 
+                fill="#ffffff" stroke="#2d3748" stroke-width="2"/>`;
+        
+        // Odalar
+        const roomsPerRow = Math.ceil(Math.sqrt(roomCount));
+        const roomWidth = width / roomsPerRow;
+        const roomHeight = height / Math.ceil(roomCount / roomsPerRow);
+        
+        for (let room = 0; room < roomCount; room++) {
+            const roomX = 50 + (room % roomsPerRow) * roomWidth;
+            const roomY = currentY + Math.floor(room / roomsPerRow) * roomHeight;
+            
+            svg += `<rect x="${roomX}" y="${roomY}" width="${roomWidth - 1}" height="${roomHeight - 1}" 
+                    fill="none" stroke="#cbd5e0" stroke-width="1"/>`;
+            
+            let roomName = '';
+            if (room === 0) roomName = 'Salon';
+            else if (room === roomCount - 1) roomName = 'Mutfak';
+            else roomName = `Oda${room}`;
+            
+            svg += `<text x="${roomX + roomWidth/2}" y="${roomY + roomHeight/2}" 
+                    text-anchor="middle" font-size="8" fill="#4a5568">${roomName}</text>`;
+        }
+        
+        // Kapı
+        svg += `<rect x="48" y="${currentY + height/2 - 3}" width="4" height="6" fill="#8b4513"/>`;
+        
+        // Daire bilgisi
+        svg += `<text x="${50 + width + 10}" y="${currentY + height/2}" font-size="12" fill="#1f2937" font-weight="bold">
+                ${apt.type} - ${apt.area}m²</text>`;
+        
+        currentY += height + 25;
+    });
+    
+    svg += '</svg>';
+    floorPlan.innerHTML = svg;
+}
+
+// Form doğrulama
+function validateForm() {
+    let isValid = true;
+    const requiredFields = ['sehir', 'parselAlani', 'imarDurumu'];
+    
+    requiredFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        const value = field.value.trim();
+        
+        if (!value || (fieldId === 'parselAlani' && parseFloat(value) <= 0)) {
+            field.style.borderColor = '#ef4444';
+            isValid = false;
+        } else {
+            field.style.borderColor = '#e5e7eb';
+        }
+    });
+    
+    if (!isValid) {
+        document.getElementById('imarNotlari').innerHTML = 
+            '<div class="error">❌ Lütfen tüm zorunlu alanları doldurun!</div>';
+    }
+    
+    return isValid;
+}
+
+// Bildirim gösterme
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (document.body.contains(notification)) {
+            document.body.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Online/Offline durumu
+window.addEventListener('online', () => {
+    console.log('Çevrimiçi bağlantı kuruldu');
+    showNotification('🌐 İnternet bağlantısı kuruldu!', 'success');
+});
+
+window.addEventListener('offline', () => {
+    console.log('Çevrimdışı modda çalışıyor');
+    showNotification('📱 Çevrimdışı modda çalışıyor', 'warning');
+});
