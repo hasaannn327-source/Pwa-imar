@@ -2,8 +2,7 @@ const CACHE_NAME = 'imar-hesaplayici-v1.0.0';
 const urlsToCache = [
   '/',
   '/index.html',
-  '/manifest.json',
-  // CSS ve JS dosyaları inline olduğu için cache'e eklenmeyecek
+  '/manifest.json'
 ];
 
 // Service Worker yüklendiğinde
@@ -58,71 +57,4 @@ self.addEventListener('fetch', event => {
         return caches.match(event.request);
       })
   );
-});
-
-// Background Sync - offline hesaplamaları senkronize etmek için
-self.addEventListener('sync', event => {
-  if (event.tag === 'background-sync') {
-    console.log('Service Worker: Background sync');
-    event.waitUntil(doBackgroundSync());
-  }
-});
-
-function doBackgroundSync() {
-  // Offline hesaplamaları backend'e gönder
-  return new Promise((resolve) => {
-    // Burada offline hesaplamaları işle
-    resolve();
-  });
-}
-
-// Push notifications
-self.addEventListener('push', event => {
-  if (event.data) {
-    const data = event.data.json();
-    const options = {
-      body: data.body,
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/badge-72x72.png',
-      vibrate: [200, 100, 200],
-      data: {
-        url: data.url || '/'
-      },
-      actions: [
-        {
-          action: 'open',
-          title: 'Aç',
-          icon: '/icons/action-open.png'
-        },
-        {
-          action: 'close',
-          title: 'Kapat',
-          icon: '/icons/action-close.png'
-        }
-      ]
-    };
-
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
-  }
-});
-
-// Notification click eventi
-self.addEventListener('notificationclick', event => {
-  event.notification.close();
-  
-  if (event.action === 'open') {
-    event.waitUntil(
-      clients.openWindow(event.notification.data.url)
-    );
-  }
-});
-
-// Share target API
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SHARE_DATA') {
-    // Paylaşılan veriyi işle
-    console.log('Shared data:', event.data.data);
-  }
 });
