@@ -1,1 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏗️ Profesyonel İmar Hesaplayıcısı Pro</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="İmar Hesaplayıcısı">
+    
+    <!-- CSS Dosyası -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
+            <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
+        </div>
 
+        <div class="main-grid">
+            <!-- Temel Bilgiler Paneli -->
+            <div class="panel">
+                <h3>📍 Temel Proje Bilgileri</h3>
+                <form id="calculatorForm">
+                    <div class="input-group">
+                        <label for="sehir">Şehir/İl</label>
+                        <select id="sehir" name="sehir" required>
+                            <option value="">Seçiniz</option>
+                            <option value="istanbul">İstanbul</option>
+                            <option value="ankara">Ankara</option>
+                            <option value="izmir">İzmir</option>
+                            <option value="antalya">Antalya</option>
+                            <option value="bursa">Bursa</option>
+                            <option value="adana">Adana</option>
+                            <option value="konya">Konya</option>
+                            <option value="gaziantep">Gaziantep</option>
+                            <option value="kayseri">Kayseri</option>
+                            <option value="diger">Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="parselAlani">Parsel Alanı (m²)</label>
+                        <input type="number" id="parselAlani" name="parselAlani" min="100" step="0.01" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="imarDurumu">İmar Durumu</label>
+                        <select id="imarDurumu" name="imarDurumu" required>
+                            <option value="">Seçiniz</option>
+                            <option value="konut-1">Konut Alanı (E=1.0)</option>
+                            <option value="konut-2">Konut Alanı (E=1.5)</option>
+                            <option value="konut-3">Konut Alanı (E=2.0)</option>
+                            <option value="ticaret">Ticaret Alanı</option>
+                            <option value="karma">Karma Kullanım</option>
+                            <option value="turizm">Turizm Alanı</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="taban">TAKS</label>
+                        <input type="number" id="taban" name="taban" min="0.1" max="0.8" step="0.01" value="0.30">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="emsal">EMSAL</label>
+                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="katYuksekligi">Kat Yüksekliği (m)</label>
+                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0">
+                    </div>
+
+                    <button type="submit" class="calculate-btn">🔧 Hesapla</button>
+                </form>
+
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Hesaplamalar yapılıyor...</p>
+                </div>
+
+                <div id="imarNotlari"></div>
+            </div>
+
+            <!-- Blok Planlaması -->
+            <div class="panel">
+                <h3>🏢 Blok Planlaması</h3>
+                
+                <div class="block-controls">
+                    <button type="button" class="add-block" onclick="addBlock()">+ Blok Ekle</button>
+                    <button type="button" class="remove-block" onclick="removeBlock()">- Blok Sil</button>
+                </div>
+
+                <div id="blockList">
+                    <p style="text-align: center; color: #6b7280;">Henüz blok eklenmemiş</p>
+                </div>
+
+                <div class="result-item">
+                    <span class="result-label">Toplam Blok Sayısı:</span>
+                    <span class="result-value" id="toplamBlokSayisi">0</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Toplam Daire Sayısı:</span>
+                    <span class="result-value" id="toplamDaireSayisi">0</span>
+                </div>
+            </div>
+
+            <!-- Sonuçlar -->
+            <div class="panel">
+                <h3>📋 Hesaplama Sonuçları</h3>
+                <div id="results">
+                    <div class="result-item">
+                        <span class="result-label">Max. Taban Alanı:</span>
+                        <span class="result-value" id="maxTabanAlani">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Max. İnşaat Alanı:</span>
+                        <span class="result-value" id="maxInsaatAlani">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Max. Kat Sayısı:</span>
+                        <span class="result-value" id="maxKatSayisi">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Max. Yükseklik:</span>
+                        <span class="result-value" id="maxYukseklik">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Açık Alan:</span>
+                        <span class="result-value" id="acikAlan">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Yapılaşma Oranı:</span>
+                        <span class="result-value" id="yapilasmaorani">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alt Paneller -->
+        <div class="main-grid">
+            <!-- Daire Tipleri -->
+            <div class="panel">
+                <h3>🏠 Daire Tipleri ve Metrekare</h3>
+                
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('daire-tipleri')">Daire Tipleri</div>
+                    <div class="tab" onclick="switchTab('daire-listesi')">Daire Listesi</div>
+                </div>
+
+                <div id="daire-tipleri" class="tab-content active">
+                    <div class="apartment-grid">
+                        <div class="apartment-type" data-type="1+1" data-area="65">
+                            <strong>1+1</strong><br>
+                            <small>65 m²</small>
+                        </div>
+                        <div class="apartment-type" data-type="2+1" data-area="95">
+                            <strong>2+1</strong><br>
+                            <small>95 m²</small>
+                        </div>
+                        <div class="apartment-type" data-type="3+1" data-area="125">
+                            <strong>3+1</strong><br>
+                            <small>125 m²</small>
+                        </div>
+                        <div class="apartment-type" data-type="4+1" data-area="160">
+                            <strong>4+1</strong><br>
+                            <small>160 m²</small>
+                        </div>
+                        <div class="apartment-type" data-type="dubleks" data-area="200">
+                            <strong>Dubleks</strong><br>
+                            <small>200 m²</small>
+                        </div>
+                    </div>
+                    <div id="selectedApartments"></div>
+                </div>
+
+                <div id="daire-listesi" class="tab-content">
+                    <div id="daireListesiDetay">
+                        <p style="text-align: center; color: #6b7280; padding: 40px;">
+                            Hesaplama sonrası daire listesi görüntülenecek
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Görselleştirme -->
+            <div class="panel">
+                <h3>🏗️ Yerleşim Planı Görselleştirmesi</h3>
+                <div class="building-visual" id="buildingVisual">
+                    <p style="text-align: center; color: #6b7280; padding: 100px 20px;">
+                        Hesaplama sonrası yerleşim planı görüntülenecek
+                    </p>
+                </div>
+            </div>
+
+            <!-- Kat Planı -->
+            <div class="panel">
+                <h3>📐 Kat Planı Görselleştirmesi</h3>
+                <div class="building-visual" id="floorPlan">
+                    <p style="text-align: center; color: #6b7280; padding: 100px 20px;">
+                        Daire tipi seçildikten sonra kat planı görüntülenecek
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Profesyonel İmar Hesaplayıcısı Pro - Gelişmiş İnşaat Hesaplamaları</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Dosyası -->
+    <script src="app.js"></script>
+</body>
+  </html>
