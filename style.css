@@ -67,6 +67,12 @@ body {
     padding: 25px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
 }
 
 .panel h3 {
@@ -97,7 +103,8 @@ body {
     border: 2px solid #e5e7eb;
     border-radius: 8px;
     font-size: 16px;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: white;
 }
 
 .input-group input:focus, 
@@ -105,6 +112,10 @@ body {
     outline: none;
     border-color: #2563eb;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-group input::placeholder {
+    color: #9ca3af;
 }
 
 /* Butonlar */
@@ -134,35 +145,38 @@ body {
 .block-controls {
     display: flex;
     gap: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 .block-controls button {
-    padding: 8px 15px;
+    padding: 10px 15px;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
-    transition: transform 0.2s ease;
+    font-size: 14px;
+    transition: transform 0.2s ease, background-color 0.3s ease;
 }
 
 .add-block {
-    background: #10b981;
+    background: linear-gradient(135deg, #10b981, #059669);
     color: white;
+    flex: 1;
 }
 
 .add-block:hover {
-    background: #059669;
+    background: linear-gradient(135deg, #059669, #047857);
     transform: translateY(-1px);
 }
 
 .remove-block {
-    background: #ef4444;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
+    flex: 1;
 }
 
 .remove-block:hover {
-    background: #dc2626;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
     transform: translateY(-1px);
 }
 
@@ -171,7 +185,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding: 12px 0;
     border-bottom: 1px solid #f3f4f6;
 }
 
@@ -190,47 +204,84 @@ body {
     font-size: 1.1rem;
 }
 
+.summary-box {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+    border-left: 4px solid #2563eb;
+}
+
 /* Görselleştirme */
 .building-visual {
     width: 100%;
     height: 300px;
-    border: 2px solid #ddd;
+    border: 2px solid #e5e7eb;
     border-radius: 10px;
     background: #f0f8ff;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+}
+
+.placeholder-content {
+    text-align: center;
+    color: #6b7280;
+}
+
+.placeholder-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    opacity: 0.7;
+}
+
+.placeholder-content p {
+    font-size: 0.9rem;
+    line-height: 1.4;
 }
 
 /* Mesaj Kutularları */
 .error {
     color: #dc2626;
     background: #fef2f2;
-    padding: 12px;
+    padding: 12px 15px;
     border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 15px;
     font-size: 14px;
     border-left: 4px solid #dc2626;
+    font-weight: 500;
 }
 
 .warning {
     color: #d97706;
     background: #fffbeb;
-    padding: 12px;
+    padding: 12px 15px;
     border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 15px;
     font-size: 14px;
     border-left: 4px solid #d97706;
+    font-weight: 500;
+}
+
+.warning ul {
+    margin-left: 20px;
+    margin-top: 8px;
+}
+
+.warning li {
+    margin-bottom: 4px;
 }
 
 .success {
     color: #059669;
     background: #ecfdf5;
-    padding: 12px;
+    padding: 12px 15px;
     border-radius: 8px;
-    margin-top: 10px;
+    margin-top: 15px;
     font-size: 14px;
     border-left: 4px solid #059669;
+    font-weight: 500;
 }
 
 /* Loading Animasyonu */
@@ -253,6 +304,11 @@ body {
     display: flex;
 }
 
+.loading p {
+    color: #6b7280;
+    font-weight: 500;
+}
+
 .spinner {
     border: 4px solid #f3f4f6;
     border-top: 4px solid #2563eb;
@@ -260,7 +316,7 @@ body {
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 @keyframes spin {
@@ -272,64 +328,70 @@ body {
 .apartment-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
+    gap: 12px;
     margin-top: 15px;
 }
 
 .apartment-type {
     border: 2px solid #e5e7eb;
-    border-radius: 8px;
+    border-radius: 10px;
     padding: 15px 10px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     background: #ffffff;
+    user-select: none;
 }
 
 .apartment-type:hover {
     border-color: #2563eb;
     background: #eff6ff;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
 }
 
 .apartment-type.selected {
     border-color: #2563eb;
     background: #dbeafe;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    transform: scale(1.05);
 }
 
 .apartment-type strong {
     display: block;
     font-size: 1.2rem;
     color: #1f2937;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .apartment-type small {
     color: #6b7280;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 /* Blok Item */
 .block-item {
-    background: #f3f4f6;
-    border-radius: 8px;
-    padding: 15px;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 18px;
     margin-bottom: 15px;
     border-left: 4px solid #2563eb;
     transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
 }
 
 .block-item:hover {
-    background: #e5e7eb;
+    background: #f1f5f9;
     transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .block-item h4, .block-item h5 {
     color: #1f2937;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     font-size: 1.1rem;
+    font-weight: 600;
 }
 
 /* Tab Sistemi */
@@ -337,25 +399,28 @@ body {
     display: flex;
     margin-bottom: 20px;
     background: #f3f4f6;
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 10px;
+    padding: 6px;
+    border: 1px solid #e5e7eb;
 }
 
 .tab {
     flex: 1;
-    padding: 12px 10px;
+    padding: 12px 15px;
     text-align: center;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 8px;
     transition: all 0.3s ease;
     font-weight: 500;
     color: #6b7280;
+    font-size: 14px;
 }
 
 .tab.active {
     background: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     color: #1f2937;
+    transform: translateY(-1px);
 }
 
 .tab:hover:not(.active) {
@@ -365,10 +430,16 @@ body {
 
 .tab-content {
     display: none;
+    animation: fadeIn 0.3s ease-in;
 }
 
 .tab-content.active {
     display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Footer */
@@ -376,8 +447,9 @@ body {
     text-align: center;
     color: white;
     opacity: 0.8;
-    margin-top: 30px;
+    margin-top: 40px;
     font-size: 0.9rem;
+    padding: 20px;
 }
 
 /* SVG Stilleri */
@@ -385,10 +457,8 @@ svg text {
     font-family: 'Segoe UI', sans-serif;
 }
 
-/* Hover Efektleri */
-.panel:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+svg {
+    border-radius: 8px;
 }
 
 /* Bildirim Stilleri */
@@ -398,69 +468,7 @@ svg text {
     right: 20px;
     z-index: 9999;
     padding: 12px 20px;
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-/* Scrollbar Stilleri */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* Responsive İyileştirmeleri */
-@media (max-width: 640px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .panel {
-        padding: 20px;
-    }
-    
-    .apartment-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 8px;
-    }
-    
-    .block-controls {
-        flex-direction: column;
-    }
-    
-    .block-controls button {
-        width: 100%;
-    }
-    
-    .tabs {
-        flex-direction: column;
-    }
-    
-    .tab {
-        margin-bottom: 2px;
-    }
-      }
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    animation: slideInRight
