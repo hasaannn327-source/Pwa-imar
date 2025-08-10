@@ -2,7 +2,8 @@
   "name": "Profesyonel İmar Hesaplayıcısı Pro",
   "short_name": "İmarPro",
   "description": "Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#2563eb",
@@ -12,42 +13,28 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23667eea'/><text x='96' y='120' font-size='80' text-anchor='middle' fill='white'>🏗️</text></svg>",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23667eea'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E🏗️%3C/text%3E%3C/svg%3E",
       "sizes": "192x192",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23667eea'/><text x='256' y='320' font-size='200' text-anchor='middle' fill='white'>🏗️</text></svg>",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23667eea'/%3E%3Ctext x='96' y='120' font-size='80' text-anchor='middle' fill='white'%3E🏗️%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23667eea'/%3E%3Ctext x='256' y='320' font-size='200' text-anchor='middle' fill='white'%3E🏗️%3C/text%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Hızlı Hesaplama",
-      "short_name": "Hesapla",
-      "description": "Doğrudan hesaplama sayfasını aç",
-      "url": "/",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='.9em' font-size='90'>⚡</text></svg>",
-          "sizes": "96x96"
-        }
-      ]
+      "purpose": "any"
     },
     {
-      "name": "Blok Planlaması",
-      "short_name": "Bloklar",
-      "description": "Çoklu blok planlaması",
-      "url": "/#bloklar",
-      "icons": [
-        {
-          "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='.9em' font-size='90'>🏢</text></svg>",
-          "sizes": "96x96"
-        }
-      ]
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%23667eea'/%3E%3Ctext x='256' y='320' font-size='200' text-anchor='middle' fill='white'%3E🏗️%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
