@@ -471,4 +471,338 @@ svg {
     border-radius: 10px;
     font-weight: 500;
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    animation: slideInRight
+    animation: slideInRight 0.3s ease-out;
+    min-width: 250px;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Scrollbar Stilleri */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive İyileştirmeleri */
+@media (max-width: 640px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .panel {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .header p {
+        font-size: 1rem;
+    }
+    
+    .apartment-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 10px;
+    }
+    
+    .apartment-type {
+        padding: 12px 8px;
+    }
+    
+    .apartment-type strong {
+        font-size: 1.1rem;
+    }
+    
+    .block-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .block-controls button {
+        width: 100%;
+        padding: 12px;
+    }
+    
+    .tabs {
+        flex-direction: column;
+        gap: 2px;
+        padding: 4px;
+    }
+    
+    .tab {
+        margin-bottom: 0;
+        padding: 10px;
+    }
+    
+    .building-visual {
+        height: 250px;
+    }
+    
+    .placeholder-icon {
+        font-size: 2.5rem;
+    }
+    
+    .result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .notification {
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-grid {
+        gap: 15px;
+    }
+    
+    .panel {
+        padding: 18px;
+    }
+    
+    .header h1 {
+        font-size: 1.6rem;
+    }
+    
+    .calculate-btn {
+        font-size: 16px;
+        padding: 12px;
+    }
+    
+    .building-visual {
+        height: 200px;
+    }
+}
+
+/* Yüksek kontrastlı ekranlar için */
+@media (prefers-contrast: high) {
+    .panel {
+        border: 2px solid #000;
+    }
+    
+    .input-group input,
+    .input-group select {
+        border: 2px solid #000;
+    }
+    
+    .apartment-type {
+        border: 2px solid #000;
+    }
+    
+    .apartment-type.selected {
+        background: #000;
+        color: #fff;
+    }
+}
+
+/* Reduced motion için */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .panel:hover {
+        transform: none;
+    }
+    
+    .apartment-type:hover {
+        transform: none;
+    }
+    
+    .apartment-type.selected {
+        transform: none;
+    }
+}
+
+/* Dark mode desteği */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+    
+    .panel {
+        background: #1e293b;
+        color: #e2e8f0;
+        border: 1px solid #334155;
+    }
+    
+    .panel h3 {
+        color: #e2e8f0;
+        border-bottom-color: #334155;
+    }
+    
+    .input-group label {
+        color: #cbd5e1;
+    }
+    
+    .input-group input,
+    .input-group select {
+        background: #334155;
+        border-color: #475569;
+        color: #e2e8f0;
+    }
+    
+    .input-group input:focus,
+    .input-group select:focus {
+        border-color: #3b82f6;
+    }
+    
+    .result-label {
+        color: #cbd5e1;
+    }
+    
+    .apartment-type {
+        background: #334155;
+        border-color: #475569;
+        color: #e2e8f0;
+    }
+    
+    .apartment-type:hover {
+        background: #475569;
+        border-color: #3b82f6;
+    }
+    
+    .apartment-type.selected {
+        background: #1e40af;
+        border-color: #3b82f6;
+    }
+    
+    .block-item {
+        background: #334155;
+        border-color: #475569;
+        color: #e2e8f0;
+    }
+    
+    .block-item:hover {
+        background: #475569;
+    }
+    
+    .tabs {
+        background: #334155;
+        border-color: #475569;
+    }
+    
+    .tab {
+        color: #94a3b8;
+    }
+    
+    .tab.active {
+        background: #1e293b;
+        color: #e2e8f0;
+    }
+    
+    .building-visual {
+        background: #0f172a;
+        border-color: #334155;
+    }
+    
+    .placeholder-content {
+        color: #94a3b8;
+    }
+    
+    .summary-box {
+        background: #334155;
+    }
+}
+
+/* Print stilleri */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+    
+    .header,
+    .footer,
+    .block-controls,
+    .calculate-btn,
+    .loading {
+        display: none;
+    }
+    
+    .panel {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+    
+    .main-grid {
+        display: block;
+    }
+    
+    .building-visual {
+        border: 1px solid #ccc;
+    }
+    
+    .tabs,
+    .tab-content {
+        display: none;
+    }
+}
+
+/* Focus görünürlüğü için */
+.input-group input:focus,
+.input-group select:focus,
+.calculate-btn:focus,
+.apartment-type:focus,
+.tab:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Hover efektleri için güvenli alanlar */
+@media (hover: hover) and (pointer: fine) {
+    .panel:hover {
+        transform: translateY(-2px);
+    }
+    
+    .apartment-type:hover {
+        transform: translateY(-3px);
+    }
+}
+
+/* Dokunmatik cihazlar için */
+@media (hover: none) and (pointer: coarse) {
+    .apartment-type {
+        padding: 18px 12px;
+    }
+    
+    .calculate-btn {
+        padding: 16px;
+        font-size: 18px;
+    }
+    
+    .tab {
+        padding: 14px;
+    }
+}
