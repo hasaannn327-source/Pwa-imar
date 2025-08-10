@@ -12,6 +12,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="İmar Hesaplayıcısı">
     
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏗️</text></svg>">
+    
     <!-- CSS Dosyası -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -28,7 +31,7 @@
                 <h3>📍 Temel Proje Bilgileri</h3>
                 <form id="calculatorForm">
                     <div class="input-group">
-                        <label for="sehir">Şehir/İl</label>
+                        <label for="sehir">Şehir/İl *</label>
                         <select id="sehir" name="sehir" required>
                             <option value="">Seçiniz</option>
                             <option value="istanbul">İstanbul</option>
@@ -45,12 +48,12 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="parselAlani">Parsel Alanı (m²)</label>
-                        <input type="number" id="parselAlani" name="parselAlani" min="100" step="0.01" required>
+                        <label for="parselAlani">Parsel Alanı (m²) *</label>
+                        <input type="number" id="parselAlani" name="parselAlani" min="100" step="0.01" placeholder="örn: 1000" required>
                     </div>
 
                     <div class="input-group">
-                        <label for="imarDurumu">İmar Durumu</label>
+                        <label for="imarDurumu">İmar Durumu *</label>
                         <select id="imarDurumu" name="imarDurumu" required>
                             <option value="">Seçiniz</option>
                             <option value="konut-1">Konut Alanı (E=1.0)</option>
@@ -63,18 +66,18 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="taban">TAKS</label>
-                        <input type="number" id="taban" name="taban" min="0.1" max="0.8" step="0.01" value="0.30">
+                        <label for="taban">TAKS (Taban Alanı Katsayısı)</label>
+                        <input type="number" id="taban" name="taban" min="0.1" max="0.8" step="0.01" value="0.30" placeholder="0.30">
                     </div>
 
                     <div class="input-group">
-                        <label for="emsal">EMSAL</label>
-                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00">
+                        <label for="emsal">EMSAL (Emsal Katsayısı)</label>
+                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00" placeholder="1.00">
                     </div>
 
                     <div class="input-group">
                         <label for="katYuksekligi">Kat Yüksekliği (m)</label>
-                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0">
+                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0">
                     </div>
 
                     <button type="submit" class="calculate-btn">🔧 Hesapla</button>
@@ -93,21 +96,23 @@
                 <h3>🏢 Blok Planlaması</h3>
                 
                 <div class="block-controls">
-                    <button type="button" class="add-block" onclick="addBlock()">+ Blok Ekle</button>
-                    <button type="button" class="remove-block" onclick="removeBlock()">- Blok Sil</button>
+                    <button type="button" class="add-block">+ Blok Ekle</button>
+                    <button type="button" class="remove-block">- Blok Sil</button>
                 </div>
 
                 <div id="blockList">
-                    <p style="text-align: center; color: #6b7280;">Henüz blok eklenmemiş</p>
+                    <p style="text-align: center; color: #6b7280; font-style: italic; padding: 20px;">Hesaplama sonrası otomatik bloklar oluşturulacak</p>
                 </div>
 
-                <div class="result-item">
-                    <span class="result-label">Toplam Blok Sayısı:</span>
-                    <span class="result-value" id="toplamBlokSayisi">0</span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Toplam Daire Sayısı:</span>
-                    <span class="result-value" id="toplamDaireSayisi">0</span>
+                <div class="summary-box">
+                    <div class="result-item">
+                        <span class="result-label">Toplam Blok Sayısı:</span>
+                        <span class="result-value" id="toplamBlokSayisi">0</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Toplam Daire Sayısı:</span>
+                        <span class="result-value" id="toplamDaireSayisi">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -150,8 +155,8 @@
                 <h3>🏠 Daire Tipleri ve Metrekare</h3>
                 
                 <div class="tabs">
-                    <div class="tab active" onclick="switchTab('daire-tipleri')">Daire Tipleri</div>
-                    <div class="tab" onclick="switchTab('daire-listesi')">Daire Listesi</div>
+                    <div class="tab active" data-tab="daire-tipleri">Daire Tipleri</div>
+                    <div class="tab" data-tab="daire-listesi">Daire Listesi</div>
                 </div>
 
                 <div id="daire-tipleri" class="tab-content active">
@@ -191,21 +196,23 @@
 
             <!-- Görselleştirme -->
             <div class="panel">
-                <h3>🏗️ Yerleşim Planı Görselleştirmesi</h3>
+                <h3>🏗️ Yerleşim Planı</h3>
                 <div class="building-visual" id="buildingVisual">
-                    <p style="text-align: center; color: #6b7280; padding: 100px 20px;">
-                        Hesaplama sonrası yerleşim planı görüntülenecek
-                    </p>
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">🏗️</div>
+                        <p>Hesaplama sonrası<br>yerleşim planı görüntülenecek</p>
+                    </div>
                 </div>
             </div>
 
             <!-- Kat Planı -->
             <div class="panel">
-                <h3>📐 Kat Planı Görselleştirmesi</h3>
+                <h3>📐 Kat Planı</h3>
                 <div class="building-visual" id="floorPlan">
-                    <p style="text-align: center; color: #6b7280; padding: 100px 20px;">
-                        Daire tipi seçildikten sonra kat planı görüntülenecek
-                    </p>
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">📐</div>
+                        <p>Daire tipi seçildikten sonra<br>kat planı görüntülenecek</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -218,4 +225,4 @@
     <!-- JavaScript Dosyası -->
     <script src="app.js"></script>
 </body>
-  </html>
+</html>
