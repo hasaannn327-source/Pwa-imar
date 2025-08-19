@@ -4,7 +4,14 @@ const urlsToCache = [
   './index.html',
   './style.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './js/main.js',
+  './js/state.js',
+  './js/calc.js',
+  './js/ui.js',
+  './js/events.js',
+  './js/pwa.js',
+  './js/theme.js'
 ];
 
 // Install Event
@@ -50,48 +57,74 @@ self.addEventListener('activate', event => {
 
 // Fetch Event
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
-  
-  // Skip chrome-extension and other protocols
   if (!event.request.url.startsWith('http')) return;
-  
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version if available
-        if (response) {
-          console.log('[SW] Serving from cache:', event.request.url);
-          return response;
-        }
-        
-        // Fetch from network
-        return fetch(event.request)
-          .then(response => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // Clone the response
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-            
-            return response;
-          })
-          .catch(() => {
-            // Return offline page for navigation requests
-            if (event.request.destination === 'document') {
-              return caches.match('./index.html');
-            }
-          });
-      })
-  );
+
+  const dest = event.request.destination;
+
+  // Strategy selection
+  if (dest === 'document') {
+    // Network-first with timeout fallback
+    event.respondWith(networkFirst(event.request, 3000));
+    return;
+  }
+  if (dest === 'script' || dest === 'style') {
+    // Stale-while-revalidate for CSS/JS
+    event.respondWith(staleWhileRevalidate(event.request));
+    return;
+  }
+  if (dest === 'image' || dest === 'font') {
+    // Cache-first for icons/fonts
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
+
+  // Default: try cache, then network
+  event.respondWith(staleWhileRevalidate(event.request));
 });
+
+async function networkFirst(request, timeoutMs = 3000) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await Promise.race([
+      fetch(request),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs))
+    ]);
+    if (response && response.ok) {
+      cache.put(request, response.clone());
+      return response;
+    }
+    throw new Error('network failed');
+  } catch (e) {
+    const cached = await cache.match(request);
+    return cached || cache.match('./index.html');
+  }
+}
+
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  const fetchPromise = fetch(request)
+    .then(response => {
+      if (response && response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    })
+    .catch(() => cached);
+  return cached || fetchPromise;
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response && response.ok) {
+    cache.put(request, response.clone());
+  }
+  return response;
+}
 
 // Message Event
 self.addEventListener('message', event => {
