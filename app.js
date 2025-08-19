@@ -5,6 +5,8 @@ import { ImarCalculator, BlockCalculator } from './src/modules/calculator.js';
 import { FormValidator, RealTimeValidator } from './src/modules/validation.js';
 import { BuildingVisualizer, ThemeManager } from './src/modules/visualization.js';
 import { MapIntegration, MapUtils } from './src/modules/map-integration.js';
+import { LeafletMapIntegration, LeafletMapUtils } from './src/modules/leaflet-map.js';
+import { MockMapIntegration } from './src/modules/mock-map.js';
 import { CONFIG, validateConfiguration } from './config.js';
 
 // Global değişkenler
@@ -52,13 +54,8 @@ function initializeApp() {
         console.warn('⚠️ Konfigürasyon uyarıları:', configValidation.warnings);
     }
     
-    // Harita entegrasyonu (API key varsa)
-    if (GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
-        mapIntegration = new MapIntegration(GOOGLE_MAPS_API_KEY);
-        initializeMap();
-    } else {
-        showMapApiKeyWarning();
-    }
+    // Harita entegrasyonu - Alternatifler ile
+    initializeMapWithAlternatives();
     
     // Varsayılan değerleri kontrol et
     setDefaultValues();
@@ -178,20 +175,61 @@ function setupMapEventListeners() {
     document.addEventListener('mapClick', handleMapClick);
 }
 
-// Harita başlatma
-async function initializeMap() {
+// Alternatifli harita başlatma
+async function initializeMapWithAlternatives() {
+    const mapContainer = document.getElementById('mapContainer');
+    if (!mapContainer) return;
+
+    // Öncelik sırası: Google Maps > Leaflet > Mock Map
     try {
-        await mapIntegration.initializeMap('mapContainer', {
-            center: { lat: 41.0082, lng: 28.9784 }, // İstanbul
-            zoom: 12
-        });
-        
-        console.log('✅ Harita başarıyla yüklendi');
-        updateMapInfo('Harita hazır', '-', '0');
+        // 1. Google Maps dene (API key varsa)
+        if (GOOGLE_MAPS_API_KEY && GOOGLE_MAPS_API_KEY !== 'YOUR_GOOGLE_MAPS_API_KEY_HERE') {
+            console.log('🗺️ Google Maps deneniyor...');
+            mapIntegration = new MapIntegration(GOOGLE_MAPS_API_KEY);
+            await mapIntegration.initializeMap('mapContainer', {
+                center: { lat: 41.0082, lng: 28.9784 },
+                zoom: 12
+            });
+            console.log('✅ Google Maps başarıyla yüklendi');
+            updateMapInfo('Google Maps hazır', '-', '0');
+            return;
+        }
     } catch (error) {
-        console.error('❌ Harita yükleme hatası:', error);
-        showMapError('Harita yüklenemedi: ' + error.message);
+        console.warn('⚠️ Google Maps yüklenemedi:', error.message);
     }
+
+    try {
+        // 2. Leaflet (OpenStreetMap) dene
+        console.log('🗺️ Leaflet (OpenStreetMap) deneniyor...');
+        mapIntegration = new LeafletMapIntegration();
+        await mapIntegration.initializeMap('mapContainer', {
+            center: [41.0082, 28.9784],
+            zoom: 13
+        });
+        console.log('✅ Leaflet haritası başarıyla yüklendi');
+        updateMapInfo('OpenStreetMap hazır', '-', '0');
+        return;
+    } catch (error) {
+        console.warn('⚠️ Leaflet yüklenemedi:', error.message);
+    }
+
+    try {
+        // 3. Mock Map (son çare)
+        console.log('🗺️ Mock harita yükleniyor...');
+        mapIntegration = new MockMapIntegration();
+        await mapIntegration.initializeMap('mapContainer');
+        console.log('✅ Mock harita başarıyla yüklendi');
+        updateMapInfo('Demo harita hazır', '-', '0');
+        showMapAlternativeInfo();
+    } catch (error) {
+        console.error('❌ Hiçbir harita sistemi yüklenemedi:', error);
+        showMapError('Harita sistemleri yüklenemedi');
+    }
+}
+
+// Alternatif harita bilgisi göster
+function showMapAlternativeInfo() {
+    showNotification('ℹ️ Demo harita modu aktif - Gerçek konum verisi kullanılmıyor', 'info');
 }
 
 // API key uyarısı göster

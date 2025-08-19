@@ -17,7 +17,7 @@ Türkiye'deki imar mevzuatına uygun, profesyonel imar hesaplamaları, 3D görse
 ### 🎨 **Görsel Özellikler**
 - **3D Bina Görselleştirme** - İnteraktif bina modeli
 - **🌙 Dark/Light Theme** - Otomatik tema değiştirme
-- **🗺️ Google Maps Entegrasyonu** - Parsel görselleştirme ve konum seçimi
+- **🗺️ Çoklu Harita Sistemi** - Google Maps, OpenStreetMap ve Demo Harita desteği
 - **Responsive Tasarım** - Mobil, tablet ve masaüstü uyumlu
 - **Modern UI/UX** - Çağdaş ve kullanışlı tasarım
 
@@ -94,29 +94,40 @@ npx http-server . -p 3000 -c-1
 open http://localhost:3000
 ```
 
-### 🗺️ Google Maps API Kurulumu (Opsiyonel)
-Harita özelliğini kullanmak için:
+### 🗺️ Harita Sistemleri
 
-1. **Google Cloud Console'a gidin**: https://console.cloud.google.com
-2. **Yeni proje oluşturun** veya mevcut projeyi seçin
-3. **APIs & Services > Library** bölümünden şu API'leri etkinleştirin:
-   - Maps JavaScript API
-   - Geocoding API
-   - Places API (opsiyonel)
-4. **APIs & Services > Credentials** bölümünden API key oluşturun
-5. **`config.js`** dosyasındaki `GOOGLE_MAPS.API_KEY` değerini güncelleyin:
+Uygulama **3 farklı harita sistemi** destekler ve otomatik olarak en uygun olanını seçer:
 
-```javascript
-// config.js
-export const CONFIG = {
-    GOOGLE_MAPS: {
-        API_KEY: 'YOUR_ACTUAL_API_KEY_HERE',
-        // ... diğer ayarlar
-    }
-};
-```
+#### 🥇 **Google Maps (En İyi Deneyim)**
+- **Avantajlar**: En detaylı haritalar, gelişmiş özellikler
+- **Dezavantajlar**: API key ve kredi kartı gerektirir
+- **Kurulum**:
+  1. [Google Cloud Console](https://console.cloud.google.com)'a gidin
+  2. Yeni proje oluşturun
+  3. Maps JavaScript API + Geocoding API'yi etkinleştirin
+  4. API key oluşturun
+  5. `config.js`'te API key'i güncelleyin:
+  ```javascript
+  GOOGLE_MAPS: { API_KEY: 'YOUR_API_KEY_HERE' }
+  ```
 
-**⚠️ Güvenlik Notu**: Production ortamında API key'i environment variable olarak saklayın!
+#### 🥈 **OpenStreetMap + Leaflet (Ücretsiz)**
+- **Avantajlar**: Tamamen ücretsiz, açık kaynak
+- **Dezavantajlar**: Google Maps kadar detaylı değil
+- **Kurulum**: Otomatik! Hiçbir ayar gerekmez
+
+#### 🥉 **Demo Harita (Çevrimdışı)**
+- **Avantajlar**: İnternet bağlantısı gerektirmez
+- **Dezavantajlar**: Gerçek konum verisi yok, sadece görselleştirme
+- **Kullanım**: Diğer sistemler çalışmazsa otomatik aktif olur
+
+### 🔄 **Otomatik Sistem Seçimi**
+Uygulama şu sırayla dener:
+1. **Google Maps** (API key varsa)
+2. **OpenStreetMap** (Leaflet ile)
+3. **Demo Harita** (son çare)
+
+**💡 Tavsiye**: Google Maps API key alamıyorsanız, OpenStreetMap sistemi mükemmel bir alternatif!
 
 ### PWA Olarak Yükleme
 1. Desteklenen tarayıcıda siteyi açın
