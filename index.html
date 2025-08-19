@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Profesyonel İmar Hesaplayıcısı Pro: TAKS/KAKS hesaplamaları, blok/daire planlaması ve PWA desteği ile modern imar hesaplamaları.">
     <title>🏗️ Profesyonel İmar Hesaplayıcısı Pro</title>
     
     <!-- PWA Meta Tags -->
@@ -17,11 +18,21 @@
     
     <!-- CSS Dosyası -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Open Graph / Twitter -->
+    <meta property="og:title" content="Profesyonel İmar Hesaplayıcısı Pro">
+    <meta property="og:description" content="TAKS/KAKS hesaplamaları ve blok/daire planlaması ile modern imar hesaplamaları.">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="tr_TR">
+    <meta name="twitter:card" content="summary">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
+                <button id="themeToggle" class="theme-toggle" aria-pressed="false" title="Temayı değiştir">🌙 Karanlık Tema</button>
+            </div>
             <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
         </div>
 
@@ -154,12 +165,12 @@
             <div class="panel">
                 <h3>🏠 Daire Tipleri ve Metrekare</h3>
                 
-                <div class="tabs">
-                    <div class="tab active" data-tab="daire-tipleri">Daire Tipleri</div>
-                    <div class="tab" data-tab="daire-listesi">Daire Listesi</div>
+                <div class="tabs" role="tablist" aria-label="Daire sekmeleri">
+                    <div class="tab active" role="tab" id="tab-daire-tipleri" aria-selected="true" aria-controls="daire-tipleri" tabindex="0" data-tab="daire-tipleri">Daire Tipleri</div>
+                    <div class="tab" role="tab" id="tab-daire-listesi" aria-selected="false" aria-controls="daire-listesi" tabindex="-1" data-tab="daire-listesi">Daire Listesi</div>
                 </div>
 
-                <div id="daire-tipleri" class="tab-content active">
+                <div id="daire-tipleri" class="tab-content active" role="tabpanel" aria-labelledby="tab-daire-tipleri">
                     <div class="apartment-grid">
                         <div class="apartment-type" data-type="1+1" data-area="65">
                             <strong>1+1</strong><br>
@@ -185,7 +196,7 @@
                     <div id="selectedApartments"></div>
                 </div>
 
-                <div id="daire-listesi" class="tab-content">
+                <div id="daire-listesi" class="tab-content" role="tabpanel" aria-labelledby="tab-daire-listesi">
                     <div id="daireListesiDetay">
                         <p style="text-align: center; color: #6b7280; padding: 40px;">
                             Hesaplama sonrası daire listesi görüntülenecek
@@ -221,6 +232,9 @@
             <p>© 2025 Profesyonel İmar Hesaplayıcısı Pro - Gelişmiş İnşaat Hesaplamaları</p>
         </div>
     </div>
+
+    <!-- Canlı Anlatım Bölgesi (A11y) -->
+    <div id="notification-region" role="status" aria-live="polite" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;"></div>
 
     <!-- JavaScript Dosyası -->
     <script src="app.js"></script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'imar-hesaplayici-v1.0.0';
+const CACHE_NAME = 'imar-hesaplayici-v2.0.1';
 const urlsToCache = [
   './',
   './index.html',

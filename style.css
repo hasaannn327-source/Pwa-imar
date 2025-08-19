@@ -12,6 +12,26 @@ body {
     color: #333;
 }
 
+/* Tema değişkenleri */
+:root {
+    --bg-gradient-start: #667eea;
+    --bg-gradient-end: #764ba2;
+    --panel-bg: #ffffff;
+    --text-primary: #1f2937;
+    --text-secondary: #374151;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --brand: #2563eb;
+    --brand-2: #1d4ed8;
+    --success: #059669;
+    --warning: #d97706;
+}
+
+body {
+    background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-primary);
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -61,7 +81,7 @@ body {
 
 /* Panel Stili */
 .panel {
-    background: white;
+    background: var(--panel-bg);
     border-radius: 15px;
     padding: 25px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -75,7 +95,7 @@ body {
 }
 
 .panel h3 {
-    color: #1f2937;
+    color: var(--text-primary);
     margin-bottom: 20px;
     text-align: center;
     font-size: 1.3rem;
@@ -92,24 +112,24 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .input-group input, 
 .input-group select {
     width: 100%;
     padding: 12px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border);
     border-radius: 8px;
     font-size: 16px;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    background: white;
+    background: var(--panel-bg);
 }
 
 .input-group input:focus, 
 .input-group select:focus {
     outline: none;
-    border-color: #2563eb;
+    border-color: var(--brand);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -121,7 +141,7 @@ body {
 .calculate-btn {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--brand), var(--brand-2));
     color: white;
     border: none;
     border-radius: 10px;
@@ -194,12 +214,12 @@ body {
 
 .result-label {
     font-weight: 500;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .result-value {
     font-weight: 700;
-    color: #2563eb;
+    color: var(--brand);
     font-size: 1.1rem;
 }
 
@@ -208,14 +228,14 @@ body {
     border-radius: 10px;
     padding: 15px;
     margin-top: 15px;
-    border-left: 4px solid #2563eb;
+    border-left: 4px solid var(--brand);
 }
 
 /* Görselleştirme */
 .building-visual {
     width: 100%;
     height: 300px;
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border);
     border-radius: 10px;
     background: #f0f8ff;
     display: flex;
@@ -259,7 +279,7 @@ body {
     border-radius: 8px;
     margin-top: 15px;
     font-size: 14px;
-    border-left: 4px solid #d97706;
+    border-left: 4px solid var(--warning);
     font-weight: 500;
 }
 
@@ -279,7 +299,7 @@ body {
     border-radius: 8px;
     margin-top: 15px;
     font-size: 14px;
-    border-left: 4px solid #059669;
+    border-left: 4px solid var(--success);
     font-weight: 500;
 }
 
@@ -332,25 +352,25 @@ body {
 }
 
 .apartment-type {
-    border: 2px solid #e5e7eb;
+    border: 2px solid var(--border);
     border-radius: 10px;
     padding: 15px 10px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    background: #ffffff;
+    background: var(--panel-bg);
     user-select: none;
 }
 
 .apartment-type:hover {
-    border-color: #2563eb;
+    border-color: var(--brand);
     background: #eff6ff;
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
 }
 
 .apartment-type.selected {
-    border-color: #2563eb;
+    border-color: var(--brand);
     background: #dbeafe;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     transform: scale(1.05);
@@ -359,7 +379,7 @@ body {
 .apartment-type strong {
     display: block;
     font-size: 1.2rem;
-    color: #1f2937;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 
@@ -375,9 +395,9 @@ body {
     border-radius: 10px;
     padding: 18px;
     margin-bottom: 15px;
-    border-left: 4px solid #2563eb;
+    border-left: 4px solid var(--brand);
     transition: all 0.3s ease;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
 }
 
 .block-item:hover {
@@ -387,7 +407,7 @@ body {
 }
 
 .block-item h4, .block-item h5 {
-    color: #1f2937;
+    color: var(--text-primary);
     margin-bottom: 12px;
     font-size: 1.1rem;
     font-weight: 600;
@@ -400,7 +420,7 @@ body {
     background: #f3f4f6;
     border-radius: 10px;
     padding: 6px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border);
 }
 
 .tab {
@@ -418,12 +438,12 @@ body {
 .tab.active {
     background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    color: #1f2937;
+    color: var(--text-primary);
     transform: translateY(-1px);
 }
 
 .tab:hover:not(.active) {
-    color: #374151;
+    color: var(--text-secondary);
     background: #e5e7eb;
 }
 
@@ -547,3 +567,40 @@ svg {
         transform: translateY(-3px);
     }
       }
+
+/* Tema tuşu */
+.theme-toggle {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, var(--text-primary), #111827);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Karanlık tema */
+.dark {
+    --bg-gradient-start: #0f172a;
+    --bg-gradient-end: #111827;
+    --panel-bg: #0b1220;
+    --text-primary: #e5e7eb;
+    --text-secondary: #d1d5db;
+    --muted: #9ca3af;
+    --border: #1f2937;
+    --brand: #60a5fa;
+    --brand-2: #3b82f6;
+    --success: #34d399;
+    --warning: #fbbf24;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not(.light) .container {}
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+        animation: none !important;
+    }
+}
