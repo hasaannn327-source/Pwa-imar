@@ -21,8 +21,18 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
-            <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
+                    <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
+                </div>
+                <div class="header-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Tema değiştir" title="Koyu/Açık tema arasında geçiş yap">
+                        <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+                        <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="main-grid">
@@ -32,7 +42,7 @@
                 <form id="calculatorForm">
                     <div class="input-group">
                         <label for="sehir">Şehir/İl *</label>
-                        <select id="sehir" name="sehir" required>
+                        <select id="sehir" name="sehir" required aria-describedby="sehir-help" aria-label="Proje şehrini seçin">
                             <option value="">Seçiniz</option>
                             <option value="istanbul">İstanbul</option>
                             <option value="ankara">Ankara</option>
@@ -45,16 +55,18 @@
                             <option value="kayseri">Kayseri</option>
                             <option value="diger">Diğer</option>
                         </select>
+                        <small id="sehir-help" class="input-help">Şehir seçimi imar yönetmeliklerini belirler</small>
                     </div>
 
                     <div class="input-group">
                         <label for="parselAlani">Parsel Alanı (m²) *</label>
-                        <input type="number" id="parselAlani" name="parselAlani" min="100" step="0.01" placeholder="örn: 1000" required>
+                        <input type="number" id="parselAlani" name="parselAlani" min="100" max="100000" step="0.01" placeholder="örn: 1000" required aria-describedby="parsel-help" aria-label="Parsel alanını metrekare cinsinden girin">
+                        <small id="parsel-help" class="input-help">100-100,000 m² arasında bir değer girin</small>
                     </div>
 
                     <div class="input-group">
                         <label for="imarDurumu">İmar Durumu *</label>
-                        <select id="imarDurumu" name="imarDurumu" required>
+                        <select id="imarDurumu" name="imarDurumu" required aria-describedby="imar-help" aria-label="İmar durumunu seçin">
                             <option value="">Seçiniz</option>
                             <option value="konut-1">Konut Alanı (E=1.0)</option>
                             <option value="konut-2">Konut Alanı (E=1.5)</option>
@@ -63,24 +75,32 @@
                             <option value="karma">Karma Kullanım</option>
                             <option value="turizm">Turizm Alanı</option>
                         </select>
+                        <small id="imar-help" class="input-help">İmar durumu TAKS/KAKS değerlerini otomatik ayarlar</small>
                     </div>
 
                     <div class="input-group">
                         <label for="taban">TAKS (Taban Alanı Katsayısı)</label>
-                        <input type="number" id="taban" name="taban" min="0.1" max="0.8" step="0.01" value="0.30" placeholder="0.30">
+                        <input type="number" id="taban" name="taban" min="0.1" max="1" step="0.01" value="0.30" placeholder="0.30" aria-describedby="taks-help" aria-label="TAKS değerini girin">
+                        <small id="taks-help" class="input-help">Taban Alanı Katsayısı (0.1-1.0 arası)</small>
                     </div>
 
                     <div class="input-group">
-                        <label for="emsal">EMSAL (Emsal Katsayısı)</label>
-                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00" placeholder="1.00">
+                        <label for="emsal">KAKS (Kat Alanı Katsayısı)</label>
+                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00" placeholder="1.00" aria-describedby="kaks-help" aria-label="KAKS değerini girin">
+                        <small id="kaks-help" class="input-help">Kat Alanı Katsayısı (0.1-5.0 arası, TAKS'tan büyük olmalı)</small>
                     </div>
 
                     <div class="input-group">
                         <label for="katYuksekligi">Kat Yüksekliği (m)</label>
-                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0">
+                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0" aria-describedby="yukseklik-help" aria-label="Kat yüksekliğini metre cinsinden girin">
+                        <small id="yukseklik-help" class="input-help">Standart kat yüksekliği 2.5-4.0 metre arası</small>
                     </div>
 
-                    <button type="submit" class="calculate-btn">🔧 Hesapla</button>
+                    <button type="submit" class="calculate-btn" aria-describedby="calc-help">
+                        <span class="btn-icon" aria-hidden="true">🔧</span>
+                        <span class="btn-text">Detaylı Hesaplama Yap</span>
+                    </button>
+                    <small id="calc-help" class="input-help">Tüm imar hesaplamalarını başlatır</small>
                 </form>
 
                 <div class="loading" id="loading">

@@ -259,25 +259,87 @@ function showUpdateNotification() {
 function handleFormSubmit() {
     console.log('Form submit işlemi başlatıldı');
     
+    // Önceki hataları temizle
+    clearErrors();
+    
     if (!validateForm()) {
         console.log('Form validasyonu başarısız');
         return;
     }
     
-    showLoading(true);
+    // Hesaplama loading'i göster
+    showCalculationLoading();
     
+    // Simulate realistic calculation time
     setTimeout(() => {
-        performCalculation();
-        showLoading(false);
-    }, 2000);
+        try {
+            performCalculation();
+            hideLoading();
+            
+            // Başarı bildirimi
+            showNotification('✅ Hesaplama başarıyla tamamlandı!', 'success');
+            
+        } catch (error) {
+            console.error('Calculation error:', error);
+            hideLoading();
+            showError('Hesaplama sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+            showNotification('❌ Hesaplama hatası!', 'error');
+        }
+    }, 1500);
 }
 
-// Loading gösterimi
-function showLoading(show) {
+// Gelişmiş loading gösterimi
+function showLoading(show, message = 'Hesaplanıyor...', type = 'calculation') {
     const loading = document.getElementById('loading');
-    if (loading) {
-        loading.classList.toggle('show', show);
+    if (!loading) return;
+    
+    if (show) {
+        loading.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner ${type}">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <div class="loading-text" role="status" aria-live="polite">
+                    <strong>${message}</strong>
+                </div>
+                <div class="loading-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        `;
+        loading.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Scroll'u engelle
+        
+        // Progress bar animasyonu
+        setTimeout(() => {
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                progressBar.style.width = '100%';
+            }
+        }, 100);
+        
+    } else {
+        loading.classList.remove('show');
+        document.body.style.overflow = ''; // Scroll'u geri aç
+        setTimeout(() => {
+            loading.innerHTML = '';
+        }, 300);
     }
+}
+
+// Özel loading mesajları
+function showCalculationLoading() {
+    showLoading(true, 'İmar hesaplamaları yapılıyor...', 'calculation');
+}
+
+function showExportLoading(format) {
+    showLoading(true, `${format} dosyası hazırlanıyor...`, 'export');
+}
+
+function hideLoading() {
+    showLoading(false);
 }
 
 // Şehir bazlı imar yönetmeliği güncelleme
@@ -463,43 +525,146 @@ function updateResultsUI() {
     });
 }
 
-// Form doğrulama
+// Gelişmiş form doğrulama
 function validateForm() {
     let isValid = true;
-    const requiredFields = [
-        { id: 'sehir', name: 'Şehir' },
-        { id: 'parselAlani', name: 'Parsel Alanı' },
-        { id: 'imarDurumu', name: 'İmar Durumu' }
+    const errors = [];
+    
+    const validationRules = [
+        { 
+            id: 'sehir', 
+            name: 'Şehir',
+            required: true,
+            validator: (value) => value && value !== ''
+        },
+        { 
+            id: 'parselAlani', 
+            name: 'Parsel Alanı',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 100000;
+            },
+            errorMessage: 'Parsel alanı 0-100,000 m² arasında olmalıdır'
+        },
+        { 
+            id: 'imarDurumu', 
+            name: 'İmar Durumu',
+            required: true,
+            validator: (value) => value && value !== ''
+        },
+        {
+            id: 'taban',
+            name: 'TAKS',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 1;
+            },
+            errorMessage: 'TAKS değeri 0-1 arasında olmalıdır'
+        },
+        {
+            id: 'emsal',
+            name: 'KAKS',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 5;
+            },
+            errorMessage: 'KAKS değeri 0-5 arasında olmalıdır'
+        }
     ];
     
-    requiredFields.forEach(field => {
-        const element = document.getElementById(field.id);
+    // Validasyon kontrolü
+    validationRules.forEach(rule => {
+        const element = document.getElementById(rule.id);
         if (!element) return;
         
         const value = element.value.trim();
         
-        if (!value || (field.id === 'parselAlani' && parseFloat(value) <= 0)) {
+        try {
+            if (rule.required && !value) {
+                element.style.borderColor = '#ef4444';
+                element.setAttribute('aria-invalid', 'true');
+                errors.push(`${rule.name} alanı zorunludur`);
+                isValid = false;
+            } else if (value && !rule.validator(value)) {
+                element.style.borderColor = '#ef4444';
+                element.setAttribute('aria-invalid', 'true');
+                errors.push(rule.errorMessage || `${rule.name} geçersiz değer`);
+                isValid = false;
+            } else {
+                element.style.borderColor = '#10b981';
+                element.setAttribute('aria-invalid', 'false');
+            }
+        } catch (error) {
+            console.error(`Validation error for ${rule.name}:`, error);
             element.style.borderColor = '#ef4444';
+            errors.push(`${rule.name} doğrulanırken hata oluştu`);
             isValid = false;
-            console.log(`Validation failed for ${field.name}`);
-        } else {
-            element.style.borderColor = '#e5e7eb';
         }
     });
     
+    // Cross-field validation
+    if (isValid) {
+        const taksValue = parseFloat(document.getElementById('taban').value);
+        const kaksValue = parseFloat(document.getElementById('emsal').value);
+        
+        if (kaksValue < taksValue) {
+            errors.push('KAKS değeri TAKS değerinden küçük olamaz');
+            isValid = false;
+        }
+    }
+    
     if (!isValid) {
-        showError('Lütfen tüm zorunlu alanları doldurun!');
+        showError(errors.join('<br>'));
+    } else {
+        clearErrors();
     }
     
     return isValid;
 }
 
-// Hata mesajı göster
+// Gelişmiş hata mesajı göster
 function showError(message) {
     const imarNotlari = document.getElementById('imarNotlari');
     if (imarNotlari) {
-        imarNotlari.innerHTML = `<div class="error">❌ ${message}</div>`;
+        imarNotlari.innerHTML = `
+            <div class="error" role="alert" aria-live="polite">
+                <div class="error-header">
+                    <span class="error-icon">❌</span>
+                    <strong>Hata:</strong>
+                </div>
+                <div class="error-content">${message}</div>
+                <button class="error-close" onclick="clearErrors()" aria-label="Hatayı kapat">✕</button>
+            </div>
+        `;
     }
+    
+    // Accessibility için focus yönetimi
+    setTimeout(() => {
+        const errorElement = document.querySelector('.error');
+        if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
+}
+
+// Hataları temizle
+function clearErrors() {
+    const imarNotlari = document.getElementById('imarNotlari');
+    if (imarNotlari) {
+        const errorElements = imarNotlari.querySelectorAll('.error');
+        errorElements.forEach(error => error.remove());
+    }
+    
+    // Input border renklerini sıfırla
+    document.querySelectorAll('input, select').forEach(input => {
+        if (input.style.borderColor === 'rgb(239, 68, 68)') {
+            input.style.borderColor = '#e5e7eb';
+            input.removeAttribute('aria-invalid');
+        }
+    });
 }
 
 // Başarı mesajı göster
