@@ -1,0 +1,133 @@
+<!-- Harita Paneli - index.html'e eklenecek -->
+<div class="panel">
+    <h3>🗺️ Parsel Haritası</h3>
+    
+    <!-- Harita Kontrolleri -->
+    <div class="map-controls" style="margin-bottom: 15px;">
+        <div class="control-group" style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="addressSearch" placeholder="Adres ara..." 
+                   style="flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--surface-color); color: var(--text-primary);">
+            <button id="searchButton" class="btn-secondary" style="padding: 8px 12px; white-space: nowrap;">🔍 Ara</button>
+            <button id="currentLocationButton" class="btn-secondary" style="padding: 8px 12px;">📍 Konum</button>
+        </div>
+        
+        <div class="control-group" style="display: flex; gap: 10px; font-size: 12px;">
+            <label style="display: flex; align-items: center; gap: 5px; color: var(--text-secondary);">
+                <input type="radio" name="parcelShape" value="rectangle" checked>
+                📐 Dikdörtgen
+            </label>
+            <label style="display: flex; align-items: center; gap: 5px; color: var(--text-secondary);">
+                <input type="radio" name="parcelShape" value="circle">
+                ⭕ Daire
+            </label>
+            <button id="clearMapButton" class="btn-danger" style="padding: 4px 8px; font-size: 11px; margin-left: auto;">🗑️ Temizle</button>
+        </div>
+    </div>
+    
+    <!-- Harita Container -->
+    <div id="mapContainer" style="width: 100%; height: 300px; border-radius: 8px; border: 2px solid var(--border-color); overflow: hidden;">
+        <div class="map-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: var(--surface-secondary); color: var(--text-muted);">
+            <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
+            <h3 style="margin: 0 0 8px 0; color: var(--text-secondary);">Harita Yükleniyor...</h3>
+            <p style="margin: 0; text-align: center; max-width: 250px; font-size: 14px;">
+                Google Maps API ile parsel konumunu görmek için harita yüklenecek
+            </p>
+        </div>
+    </div>
+    
+    <!-- Harita Bilgileri -->
+    <div id="mapInfo" style="margin-top: 15px; padding: 10px; background: var(--surface-secondary); border-radius: 6px; font-size: 12px; color: var(--text-secondary);">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span>📍 Koordinat:</span>
+            <span id="currentCoordinates">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+            <span>📏 Parsel Alanı:</span>
+            <span id="mapParcelArea">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>🏢 Binalar:</span>
+            <span id="mapBuildingCount">-</span>
+        </div>
+    </div>
+    
+    <!-- Harita Ayarları -->
+    <details style="margin-top: 10px;">
+        <summary style="cursor: pointer; color: var(--text-secondary); font-size: 12px; padding: 5px 0;">⚙️ Harita Ayarları</summary>
+        <div style="padding: 10px 0; font-size: 12px;">
+            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary);">
+                Harita Türü:
+                <select id="mapTypeSelect" style="margin-left: 10px; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--surface-color); color: var(--text-primary);">
+                    <option value="hybrid">Hibrit</option>
+                    <option value="satellite">Uydu</option>
+                    <option value="roadmap">Yol Haritası</option>
+                    <option value="terrain">Arazi</option>
+                </select>
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: var(--text-secondary);">
+                <input type="checkbox" id="showBuildingLabels" checked>
+                Bina etiketlerini göster
+            </label>
+            
+            <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+                <input type="checkbox" id="enableParcelEditing" checked>
+                Parsel düzenlemeye izin ver
+            </label>
+        </div>
+    </details>
+</div>
+
+<!-- Harita için gereken CSS -->
+<style>
+.map-controls .btn-secondary {
+    background: var(--info-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s ease;
+}
+
+.map-controls .btn-secondary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.map-controls .btn-danger {
+    background: var(--error-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.map-controls .btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.map-controls input[type="radio"] {
+    margin: 0;
+}
+
+.map-controls input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+#mapContainer .map-placeholder {
+    transition: all 0.3s ease;
+}
+
+#mapInfo {
+    border-left: 3px solid var(--primary-color);
+}
+
+details[open] summary {
+    color: var(--primary-color);
+}
+</style>
