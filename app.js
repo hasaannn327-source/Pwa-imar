@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
     console.log('Uygulama başlatıldı');
     
+    // Initialize theme
+    initializeTheme();
+    
     // Varsayılan değerleri kontrol et
     if (!document.getElementById('taban').value) {
         document.getElementById('taban').value = '0.30';
@@ -504,6 +507,9 @@ function performCalculation() {
     updateVisualization();
     updateFloorPlan();
     showSuccessMessage(maxInsaatAlani);
+    
+    // Show export controls after successful calculation
+    showExportControls();
 }
 
 // Sonuçları UI'da göster
@@ -1133,9 +1139,289 @@ function debugApp() {
     console.log('===============================');
 }
 
+// PDF Export Function
+function exportToPDF() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    showExportLoading('PDF');
+    
+    setTimeout(() => {
+        try {
+            const pdfContent = generatePDFContent();
+            downloadTextFile(pdfContent, 'pdf');
+            hideLoading();
+            showNotification('📄 PDF raporu başarıyla indirildi!', 'success');
+            
+            // Show export controls after first successful calculation
+            showExportControls();
+        } catch (error) {
+            console.error('PDF export error:', error);
+            hideLoading();
+            showError('PDF oluşturulurken hata oluştu.');
+        }
+    }, 1000);
+}
+
+// Excel Export Function
+function exportToExcel() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    showExportLoading('Excel');
+    
+    setTimeout(() => {
+        try {
+            const csvData = generateCSVData();
+            downloadTextFile(csvData, 'csv');
+            hideLoading();
+            showNotification('📊 Excel dosyası başarıyla indirildi!', 'success');
+        } catch (error) {
+            console.error('Excel export error:', error);
+            hideLoading();
+            showError('Excel dosyası oluşturulurken hata oluştu.');
+        }
+    }, 1000);
+}
+
+// Generate PDF content
+function generatePDFContent() {
+    const currentDate = new Date().toLocaleDateString('tr-TR');
+    const city = document.getElementById('sehir').value;
+    
+    return `🏗️ İMAR HESAPLAYICI PRO - DETAYLI RAPOR
+========================================
+
+📅 Rapor Tarihi: ${currentDate}
+📍 Şehir: ${city.toUpperCase()}
+🏷️ Proje ID: ${Date.now()}
+
+📋 PROJE BİLGİLERİ
+========================================
+• Parsel Alanı: ${projectResults.parselAlani.toFixed(2)} m²
+• TAKS (Taban Alanı Katsayısı): ${document.getElementById('taban').value}
+• KAKS (Kat Alanı Katsayısı): ${document.getElementById('emsal').value}
+• Kat Yüksekliği: ${document.getElementById('katYuksekligi').value} m
+• İmar Durumu: ${document.getElementById('imarDurumu').options[document.getElementById('imarDurumu').selectedIndex].text}
+
+📊 HESAPLAMA SONUÇLARI
+========================================
+• Maksimum Taban Alanı: ${projectResults.maxTabanAlani.toFixed(2)} m²
+• Maksimum İnşaat Alanı: ${projectResults.maxInsaatAlani.toFixed(2)} m²
+• Maksimum Kat Sayısı: ${projectResults.maxKatSayisi} kat
+• Maksimum Yükseklik: ${projectResults.maxYukseklik.toFixed(1)} m
+• Açık Alan: ${projectResults.acikAlan.toFixed(2)} m²
+• Yapılaşma Oranı: %${projectResults.yapilasmaorani.toFixed(1)}
+
+🏢 BLOK PLANLAMA DETAYLARI
+========================================
+Toplam Blok Sayısı: ${blocks.length}
+Toplam Daire Sayısı: ${blocks.reduce((total, block) => total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0)}
+
+${blocks.map(block => {
+    const apartmentList = Object.entries(block.apartments)
+        .map(([type, count]) => `  └─ ${type}: ${count} adet`)
+        .join('\n');
+    return `📦 Blok ${block.id} (${block.floors} kat - ${block.totalArea.toFixed(0)} m²)
+${apartmentList || '  └─ Daire planlaması henüz yapılmamış'}`;
+}).join('\n\n')}
+
+📈 ÖZET VE ÖNERİLER
+========================================
+• Toplam kullanılabilir alan: ${projectResults.maxInsaatAlani.toFixed(0)} m²
+• Arsa kullanım verimliliği: %${((projectResults.maxInsaatAlani / projectResults.parselAlani) * 100).toFixed(1)}
+• Önerilen blok sayısı: ${blocks.length}
+
+⚠️  UYARI: Bu rapor bilgilendirme amaçlıdır. 
+    Resmi imar planlaması için yetkili kurumlara başvurunuz.
+
+========================================
+Bu rapor İmar Hesaplayıcısı Pro v2.0.1 tarafından oluşturulmuştur.
+© 2025 İmar Hesaplayıcısı Pro - Tüm hakları saklıdır.`;
+}
+
+// Generate CSV data for Excel
+function generateCSVData() {
+    const data = [
+        ['İmar Hesaplayıcısı Pro - Excel Raporu', '', '', ''],
+        ['Rapor Tarihi', new Date().toLocaleDateString('tr-TR'), '', ''],
+        ['Şehir', document.getElementById('sehir').value.toUpperCase(), '', ''],
+        ['', '', '', ''],
+        ['TEMEL BİLGİLER', '', '', ''],
+        ['Alan/Değer', 'Birim', 'Değer', 'Açıklama'],
+        ['Parsel Alanı', 'm²', projectResults.parselAlani.toFixed(2), 'Toplam arsa alanı'],
+        ['TAKS', 'katsayı', document.getElementById('taban').value, 'Taban alanı katsayısı'],
+        ['KAKS', 'katsayı', document.getElementById('emsal').value, 'Kat alanı katsayısı'],
+        ['Kat Yüksekliği', 'm', document.getElementById('katYuksekligi').value, 'Standart kat yüksekliği'],
+        ['', '', '', ''],
+        ['HESAPLAMA SONUÇLARI', '', '', ''],
+        ['Sonuç', 'Birim', 'Değer', 'Açıklama'],
+        ['Maksimum Taban Alanı', 'm²', projectResults.maxTabanAlani.toFixed(2), 'Yapılabilecek taban alanı'],
+        ['Maksimum İnşaat Alanı', 'm²', projectResults.maxInsaatAlani.toFixed(2), 'Toplam inşaat alanı'],
+        ['Maksimum Kat Sayısı', 'kat', projectResults.maxKatSayisi, 'İzin verilen kat sayısı'],
+        ['Maksimum Yükseklik', 'm', projectResults.maxYukseklik.toFixed(1), 'Toplam bina yüksekliği'],
+        ['Açık Alan', 'm²', projectResults.acikAlan.toFixed(2), 'Yeşil alan ve açık alanlar'],
+        ['Yapılaşma Oranı', '%', projectResults.yapilasmaorani.toFixed(1), 'Arsa kullanım oranı'],
+        ['', '', '', ''],
+        ['BLOK DETAYLARI', '', '', '']
+    ];
+    
+    // Blok başlıkları
+    data.push(['Blok No', 'Kat Sayısı', 'Toplam Alan (m²)', 'Daire Dağılımı']);
+    
+    // Blok verileri
+    blocks.forEach(block => {
+        const apartmentDetails = Object.entries(block.apartments)
+            .map(([type, count]) => `${type}:${count}`)
+            .join(' | ');
+        
+        data.push([
+            `Blok ${block.id}`,
+            block.floors,
+            block.totalArea.toFixed(0),
+            apartmentDetails || 'Planlanmamış'
+        ]);
+    });
+    
+    return data.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+}
+
+// Download file function
+function downloadTextFile(content, type) {
+    const mimeTypes = {
+        'pdf': 'text/plain',
+        'csv': 'text/csv'
+    };
+    
+    const extensions = {
+        'pdf': 'txt', // Simple text for now, can be upgraded to real PDF later
+        'csv': 'csv'
+    };
+    
+    const blob = new Blob(['\ufeff' + content], { 
+        type: `${mimeTypes[type]};charset=utf-8` 
+    });
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `imar_raporu_${new Date().toISOString().split('T')[0]}.${extensions[type]}`;
+    a.style.display = 'none';
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Web Share API
+function shareResults() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    const shareData = {
+        title: 'İmar Hesaplayıcısı Pro - Hesaplama Sonuçları',
+        text: `${projectResults.parselAlani}m² parsel için hesaplama tamamlandı. ${projectResults.maxInsaatAlani.toFixed(0)}m² inşaat alanı, ${blocks.length} blok planlandı. Toplam ${blocks.reduce((total, block) => total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0)} daire.`,
+        url: window.location.href
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData)
+            .then(() => showNotification('🔗 Sonuçlar başarıyla paylaşıldı!', 'success'))
+            .catch(error => {
+                console.log('Share error:', error);
+                fallbackShare(shareData);
+            });
+    } else {
+        fallbackShare(shareData);
+    }
+}
+
+// Fallback share (clipboard)
+function fallbackShare(shareData) {
+    const shareText = `${shareData.title}\n\n${shareData.text}\n\n🔗 ${shareData.url}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText)
+            .then(() => showNotification('📋 Sonuçlar panoya kopyalandı!', 'success'))
+            .catch(() => showError('Paylaşım sırasında hata oluştu.'));
+    } else {
+        // Legacy fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showNotification('📋 Sonuçlar panoya kopyalandı!', 'success');
+            } else {
+                showError('Paylaşım sırasında hata oluştu.');
+            }
+        } catch (err) {
+            showError('Paylaşım sırasında hata oluştu.');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+}
+
+// Show export controls after calculation
+function showExportControls() {
+    const exportControls = document.getElementById('exportControls');
+    if (exportControls) {
+        exportControls.style.display = 'block';
+        exportControls.style.animation = 'slideInSuccess 0.3s ease-out';
+    }
+}
+
+// Theme Management Functions
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    const themeText = newTheme === 'dark' ? 'Koyu tema' : 'Açık tema';
+    showNotification(`🎨 ${themeText} aktif edildi`, 'success');
+    
+    // Update button accessibility
+    const toggleBtn = document.querySelector('.theme-toggle');
+    if (toggleBtn) {
+        toggleBtn.setAttribute('aria-label', 
+            newTheme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'
+        );
+    }
+}
+
+// Initialize theme
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    document.documentElement.setAttribute('data-theme', theme);
+}
+
 // Global scope'a PWA fonksiyonları ekle
 window.installPWA = installPWA;
 window.hideInstallBanner = hideInstallBanner;
 window.updateBlockFloors = updateBlockFloors;
 window.switchTab = switchTab;
-window.debugApp = debugApp;   
+window.debugApp = debugApp;
+window.exportToPDF = exportToPDF;
+window.exportToExcel = exportToExcel;
+window.shareResults = shareResults;
+window.toggleTheme = toggleTheme;
