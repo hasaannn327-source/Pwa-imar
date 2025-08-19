@@ -1,7 +1,7 @@
 {
   "name": "imar-hesaplayici-pro",
-  "version": "2.0.1",
-  "description": "Gelişmiş İmar Hesaplayıcısı - Profesyonel TAKS/KAKS hesaplamaları ve 3D görselleştirme",
+  "version": "2.1.0",
+  "description": "Gelişmiş İmar Hesaplayıcısı - Modüler mimari, Google Maps entegrasyonu ve gelişmiş PWA özellikleri",
   "main": "index.html",
   "scripts": {
     "start": "npx http-server . -p 3000 -c-1",

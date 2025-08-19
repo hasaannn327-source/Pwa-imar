@@ -21,6 +21,7 @@
 <body>
     <div class="container">
         <div class="header">
+            <button id="themeToggle" class="theme-toggle" title="Tema değiştir">🌙</button>
             <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
             <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
         </div>
@@ -217,12 +218,68 @@
             </div>
         </div>
 
+        <!-- Harita Paneli -->
+        <div class="main-grid" style="margin-top: 20px;">
+            <div class="panel" style="grid-column: 1 / -1;">
+                <h3>🗺️ Parsel Haritası</h3>
+                
+                <!-- Harita Kontrolleri -->
+                <div class="map-controls" style="margin-bottom: 15px;">
+                    <div class="control-group" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="addressSearch" placeholder="Adres ara..." 
+                               style="flex: 1; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                        <button id="searchButton" class="btn-secondary">🔍 Ara</button>
+                        <button id="currentLocationButton" class="btn-secondary">📍 Konum</button>
+                    </div>
+                    
+                    <div class="control-group" style="display: flex; gap: 15px; font-size: 12px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="parcelShape" value="rectangle" checked>
+                            📐 Dikdörtgen
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px;">
+                            <input type="radio" name="parcelShape" value="circle">
+                            ⭕ Daire
+                        </label>
+                        <button id="clearMapButton" class="btn-danger" style="padding: 4px 8px; font-size: 11px; margin-left: auto;">🗑️ Temizle</button>
+                    </div>
+                </div>
+                
+                <!-- Harita Container -->
+                <div id="mapContainer" style="width: 100%; height: 400px; border-radius: 8px; border: 2px solid #e5e7eb; overflow: hidden;">
+                    <div class="map-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #f8fafc; color: #6b7280;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🗺️</div>
+                        <h3 style="margin: 0 0 8px 0; color: #374151;">Harita Yükleniyor...</h3>
+                        <p style="margin: 0; text-align: center; max-width: 250px; font-size: 14px;">
+                            Google Maps API ile parsel konumunu görmek için harita yüklenecek
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Harita Bilgileri -->
+                <div id="mapInfo" style="margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px; font-size: 12px; border-left: 3px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>📍 Koordinat:</span>
+                        <span id="currentCoordinates">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span>📏 Parsel Alanı:</span>
+                        <span id="mapParcelArea">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>🏢 Binalar:</span>
+                        <span id="mapBuildingCount">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">
             <p>© 2025 Profesyonel İmar Hesaplayıcısı Pro - Gelişmiş İnşaat Hesaplamaları</p>
         </div>
     </div>
 
     <!-- JavaScript Dosyası -->
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
                 </html>

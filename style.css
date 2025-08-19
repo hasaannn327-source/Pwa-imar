@@ -102,6 +102,74 @@ body {
     box-shadow: 0 6px 20px var(--shadow-color);
 }
 
+/* Harita Kontrolleri */
+.map-controls .btn-secondary {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.map-controls .btn-secondary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.map-controls .btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.map-controls .btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.map-controls input[type="radio"] {
+    margin: 0;
+}
+
+.map-controls input[type="text"] {
+    background: white;
+    color: #1f2937;
+}
+
+.map-controls input[type="text"]:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.map-placeholder {
+    transition: all 0.3s ease;
+}
+
+/* Dark theme için harita stilleri */
+[data-theme="dark"] .map-controls input[type="text"] {
+    background: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+}
+
+[data-theme="dark"] .map-placeholder {
+    background: #374151 !important;
+    color: #d1d5db !important;
+}
+
+[data-theme="dark"] #mapInfo {
+    background: #374151 !important;
+    border-left-color: #818cf8 !important;
+}
+
 /* Grid Layout */
 .main-grid {
     display: grid;

@@ -16,7 +16,8 @@ Türkiye'deki imar mevzuatına uygun, profesyonel imar hesaplamaları, 3D görse
 
 ### 🎨 **Görsel Özellikler**
 - **3D Bina Görselleştirme** - İnteraktif bina modeli
-- **Dark/Light Theme** - Kullanıcı dostu arayüz
+- **🌙 Dark/Light Theme** - Otomatik tema değiştirme
+- **🗺️ Google Maps Entegrasyonu** - Parsel görselleştirme ve konum seçimi
 - **Responsive Tasarım** - Mobil, tablet ve masaüstü uyumlu
 - **Modern UI/UX** - Çağdaş ve kullanışlı tasarım
 
@@ -39,10 +40,14 @@ Türkiye'deki imar mevzuatına uygun, profesyonel imar hesaplamaları, 3D görse
 
 ## 🛠️ Teknolojiler
 
-- **Frontend**: Vanilla JavaScript ES6+, CSS3 Grid & Flexbox
-- **PWA**: Service Worker API, Web App Manifest
-- **Modern APIs**: Web Share API, Clipboard API, Notification API
-- **Performance**: Lazy Loading, Memory Management, Cache Strategies
+- **Frontend**: Vanilla JavaScript ES6+ Modules, CSS3 Custom Properties
+- **Architecture**: Modular Design Pattern, Class-based OOP
+- **PWA**: Service Worker API, Web App Manifest, Offline Support
+- **Maps**: Google Maps JavaScript API, Geocoding API
+- **Modern APIs**: Web Share API, Clipboard API, Notification API, Geolocation API
+- **Performance**: Lazy Loading, Memory Management, Advanced Cache Strategies
+- **Validation**: Real-time Form Validation, Custom Validation Rules
+- **Themes**: CSS Custom Properties, Local Storage Persistence
 
 ## 📱 Kullanım
 
@@ -82,12 +87,36 @@ cd imar-hesaplayici-pro
 
 ### Lokal Geliştirme
 ```bash
-# HTTP server başlatın
-npx http-server . -p 3000
+# HTTP server başlatın (ES6 modüller için gerekli)
+npx http-server . -p 3000 -c-1
 
 # Tarayıcıda açın
 open http://localhost:3000
 ```
+
+### 🗺️ Google Maps API Kurulumu (Opsiyonel)
+Harita özelliğini kullanmak için:
+
+1. **Google Cloud Console'a gidin**: https://console.cloud.google.com
+2. **Yeni proje oluşturun** veya mevcut projeyi seçin
+3. **APIs & Services > Library** bölümünden şu API'leri etkinleştirin:
+   - Maps JavaScript API
+   - Geocoding API
+   - Places API (opsiyonel)
+4. **APIs & Services > Credentials** bölümünden API key oluşturun
+5. **`config.js`** dosyasındaki `GOOGLE_MAPS.API_KEY` değerini güncelleyin:
+
+```javascript
+// config.js
+export const CONFIG = {
+    GOOGLE_MAPS: {
+        API_KEY: 'YOUR_ACTUAL_API_KEY_HERE',
+        // ... diğer ayarlar
+    }
+};
+```
+
+**⚠️ Güvenlik Notu**: Production ortamında API key'i environment variable olarak saklayın!
 
 ### PWA Olarak Yükleme
 1. Desteklenen tarayıcıda siteyi açın
@@ -142,13 +171,21 @@ Herhangi bir sorunuz veya öneriniz için:
 
 ## 📈 Sürüm Geçmişi
 
-### v2.0.0 (Current)
+### v2.1.0 (Current) - Modüler Mimari
+- ✅ **Modüler Yapıya Geçiş** - ES6 Modules ile refactor
+- ✅ **Google Maps Entegrasyonu** - Parsel görselleştirme ve konum seçimi
+- ✅ **Gelişmiş Theme Sistemi** - CSS Custom Properties ile Dark/Light tema
+- ✅ **Konfigürasyon Yönetimi** - Merkezi config dosyası
+- ✅ **Gerçek Zamanlı Validasyon** - Debounced form validation
+- ✅ **İyileştirilmiş PWA** - Gelişmiş notification ve caching
+
+### v2.0.0 - PWA Desteği
 - ✅ Tamamen yeniden yazıldı
 - ✅ PWA desteği eklendi
 - ✅ 3D görselleştirme
 - ✅ Gelişmiş validasyon
 - ✅ Dark/Light theme
 
-### v1.0.0 (Legacy)
+### v1.0.0 - Temel Sürüm
 - ✅ Temel TAKS/KAKS hesaplamaları
 - ✅ Basit form arayüzü
