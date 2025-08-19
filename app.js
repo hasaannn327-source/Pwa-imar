@@ -401,8 +401,13 @@ function performCalculation() {
     const taban = parseFloat(document.getElementById('taban').value);
     const emsal = parseFloat(document.getElementById('emsal').value);
     const katYuksekligi = parseFloat(document.getElementById('katYuksekligi').value);
+    // Ortak alan oranı (%)
+    let ortakOran = parseFloat(document.getElementById('ortakOran')?.value);
+    if (isNaN(ortakOran)) ortakOran = 2.0;
+    ortakOran = Math.max(0, Math.min(50, ortakOran));
+    const ortakOranDecimal = ortakOran / 100;
     
-    console.log('Hesaplama parametreleri:', { city, parselAlani, taban, emsal, katYuksekligi });
+    console.log('Hesaplama parametreleri:', { city, parselAlani, taban, emsal, katYuksekligi, ortakOran });
     
     // Şehir bazlı yükseklik sınırı
     const maxYukseklikLimit = (city && cityRegulations[city]) 
@@ -412,6 +417,8 @@ function performCalculation() {
     // Hesaplamalar
     const maxTabanAlani = parselAlani * taban;
     const maxInsaatAlani = parselAlani * emsal;
+    const netInsaatAlani = maxInsaatAlani * (1 - ortakOranDecimal);
+    const toplamOrtakAlan = maxInsaatAlani - netInsaatAlani;
     
     let maxKatSayisi = Math.ceil(emsal / taban);
     const maxKatSayisiYukseklikIle = Math.floor(maxYukseklikLimit / katYuksekligi);
@@ -431,7 +438,10 @@ function performCalculation() {
         acikAlan,
         yapilasmaorani,
         city,
-        maxYukseklikLimit
+        maxYukseklikLimit,
+        ortakOran: ortakOranDecimal,
+        netInsaatAlani,
+        toplamOrtakAlan
     };
     
     console.log('Hesaplama sonuçları:', projectResults);
@@ -449,6 +459,8 @@ function updateResultsUI() {
     const elements = {
         'maxTabanAlani': projectResults.maxTabanAlani.toFixed(2) + ' m²',
         'maxInsaatAlani': projectResults.maxInsaatAlani.toFixed(2) + ' m²',
+        'netInsaatAlani': (projectResults.netInsaatAlani ?? projectResults.maxInsaatAlani).toFixed(2) + ' m²',
+        'toplamOrtakAlan': (projectResults.toplamOrtakAlan ?? 0).toFixed(2) + ' m²',
         'maxKatSayisi': projectResults.maxKatSayisi + ' kat',
         'maxYukseklik': projectResults.maxYukseklik.toFixed(1) + ' m',
         'acikAlan': projectResults.acikAlan.toFixed(2) + ' m²',
@@ -573,13 +585,17 @@ function calculateBlocks() {
     }
     
     const totalFloors = blocks.reduce((sum, block) => sum + block.floors, 0);
-    const areaPerFloor = totalFloors > 0 ? projectResults.maxInsaatAlani / totalFloors : 0;
+    // Daire tahsisi net inşaat alanına göre yapılmalı
+    const baseArea = projectResults.netInsaatAlani ?? projectResults.maxInsaatAlani;
+    const areaPerFloor = totalFloors > 0 ? baseArea / totalFloors : 0;
     
     let totalApartments = 0;
     
     blocks.forEach(block => {
         block.totalArea = block.floors * areaPerFloor;
         block.apartments = {};
+        block.commonArea = (projectResults.toplamOrtakAlan ?? 0) / blocks.length;
+        block.grossArea = block.totalArea + block.commonArea;
         
         if (selectedApartmentTypes.length > 0) {
             selectedApartmentTypes.forEach(aptType => {
@@ -628,8 +644,12 @@ function updateBlockDisplay() {
                            onchange="updateBlockFloors(${index}, this.value)">
                 </div>
                 <div class="result-item">
-                <span class="result-label">Toplam Alan:</span>
+                    <span class="result-label">Net Alan:</span>
                     <span class="result-value">${block.totalArea.toFixed(0)} m²</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Ortak Alan:</span>
+                    <span class="result-value">${(block.commonArea || 0).toFixed(0)} m²</span>
                 </div>
             </div>
         `;
@@ -678,7 +698,7 @@ function updateApartmentList() {
         <strong>📊 Toplam Özet:</strong><br>
         Toplam Blok: ${blocks.length} adet<br>
         Toplam Daire: ${totalApartments} adet<br>
-        Kullanılan Alan: ${projectResults.maxInsaatAlani?.toFixed(0) || 0} m²
+        Net Alan: ${(projectResults.netInsaatAlani ?? projectResults.maxInsaatAlani).toFixed(0)} m² | Ortak: ${(projectResults.toplamOrtakAlan ?? 0).toFixed(0)} m²
     </div>`;
     
     container.innerHTML = html;
@@ -713,7 +733,7 @@ function updateVisualization() {
     }
     
     const blockCount = blocks.length;
-    const blockWidth = Math.min(50, 280 / blockCount);
+    const blockWidth = Math.min(60, Math.max(30, 260 / Math.max(1, blockCount)));
     const blockHeight = 80;
     
     let svg = `<svg width="100%" height="100%" viewBox="0 0 320 300" style="background: #e6f3ff;">
@@ -730,27 +750,18 @@ function updateVisualization() {
         const y = 60;
         const floors = block.floors;
         
-        // Her kat için dikdörtgen
-        for (let floor = 0; floor < floors; floor++) {
-            const floorY = y + (blockHeight - (floor * 12));
-            const floorColor = `hsl(${200 + floor * 25}, 70%, ${60 - floor * 3}%)`;
-            
-            svg += `<rect x="${x}" y="${floorY}" width="${blockWidth}" height="10" 
-                    fill="${floorColor}" 
-                    stroke="#1e40af" stroke-width="0.5"/>`;
-            
-            // Pencereler
-            const windowCount = Math.min(4, Math.floor(blockWidth / 8));
-            for (let window = 0; window < windowCount; window++) {
-                const windowX = x + 3 + (window * (blockWidth / windowCount));
-                svg += `<rect x="${windowX}" y="${floorY + 2}" width="4" height="4" 
-                        fill="#87ceeb" stroke="#4682b4" stroke-width="0.3"/>`;
-            }
-        }
+        // Sade blok: net alan (mavi) + ortak alan (turuncu) yığılmış bar
+        const grossHeight = blockHeight;
+        const netRatio = block.totalArea / (block.totalArea + (block.commonArea || 0) || 1);
+        const netHeight = grossHeight * netRatio;
+        const commonHeight = grossHeight - netHeight;
         
-        // Giriş kapısı
-        svg += `<rect x="${x + blockWidth/2 - 3}" y="${y + blockHeight - 2}" width="6" height="4" 
-                fill="#8b4513" stroke="#654321" stroke-width="0.5"/>`;
+        // Ortak alan
+        if (commonHeight > 0.5) {
+            svg += `<rect x="${x}" y="${y}" width="${blockWidth}" height="${commonHeight}" fill="#fbbf24" stroke="#92400e" stroke-width="0.5"/>`;
+        }
+        // Net alan
+        svg += `<rect x="${x}" y="${y + commonHeight}" width="${blockWidth}" height="${netHeight}" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5"/>`;
         
         // Blok bilgileri
         svg += `<text x="${x + blockWidth/2}" y="${y + blockHeight + 18}" text-anchor="middle" 
@@ -758,7 +769,7 @@ function updateVisualization() {
         svg += `<text x="${x + blockWidth/2}" y="${y + blockHeight + 32}" text-anchor="middle" 
                 font-size="9" fill="#6b7280">${floors} kat</text>`;
         svg += `<text x="${x + blockWidth/2}" y="${y + blockHeight + 45}" text-anchor="middle" 
-                font-size="9" fill="#6b7280">${Math.round(block.totalArea)}m²</text>`;
+                font-size="9" fill="#6b7280">Net: ${Math.round(block.totalArea)}m²</text>`;
     });
     
     // Açık alanlar
@@ -769,14 +780,18 @@ function updateVisualization() {
     
     // Özet bilgiler
     const totalApartments = document.getElementById('toplamDaireSayisi')?.textContent || '0';
-    svg += `<text x="20" y="245" font-size="10" fill="#1f2937" font-weight="bold">
+    // Legend ve özet
+    svg += `<g>
+            <rect x="20" y="235" width="10" height="10" fill="#60a5fa" stroke="#1e40af" stroke-width="0.5"/>
+            <text x="35" y="244" font-size="10" fill="#1f2937">Net Alan</text>
+            <rect x="100" y="235" width="10" height="10" fill="#fbbf24" stroke="#92400e" stroke-width="0.5"/>
+            <text x="115" y="244" font-size="10" fill="#1f2937">Ortak Alan</text>
+        </g>`;
+    svg += `<text x="20" y="260" font-size="10" fill="#1f2937" font-weight="bold">
                 📊 Toplam: ${blocks.length} blok, ${totalApartments} daire
             </text>`;
-    svg += `<text x="20" y="260" font-size="10" fill="#1f2937">
-                🏗️ Max Yükseklik: ${projectResults.maxYukseklik}m (Limit: ${projectResults.maxYukseklikLimit}m)
-            </text>`;
     svg += `<text x="20" y="275" font-size="10" fill="#1f2937">
-                🏘️ Yapılaşma Oranı: %${projectResults.yapilasmaorani.toFixed(1)}
+                🏗️ Max Yükseklik: ${projectResults.maxYukseklik}m (Limit: ${projectResults.maxYukseklikLimit}m) | Net: ${(projectResults.netInsaatAlani ?? projectResults.maxInsaatAlani).toFixed(0)}m², Ortak: ${(projectResults.toplamOrtakAlan ?? 0).toFixed(0)}m²
             </text>`;
     
     svg += '</svg>';
