@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
     console.log('Uygulama başlatıldı');
     
+    // Initialize theme
+    initializeTheme();
+    
     // Varsayılan değerleri kontrol et
     if (!document.getElementById('taban').value) {
         document.getElementById('taban').value = '0.30';
@@ -259,25 +262,87 @@ function showUpdateNotification() {
 function handleFormSubmit() {
     console.log('Form submit işlemi başlatıldı');
     
+    // Önceki hataları temizle
+    clearErrors();
+    
     if (!validateForm()) {
         console.log('Form validasyonu başarısız');
         return;
     }
     
-    showLoading(true);
+    // Hesaplama loading'i göster
+    showCalculationLoading();
     
+    // Simulate realistic calculation time
     setTimeout(() => {
-        performCalculation();
-        showLoading(false);
-    }, 2000);
+        try {
+            performCalculation();
+            hideLoading();
+            
+            // Başarı bildirimi
+            showNotification('✅ Hesaplama başarıyla tamamlandı!', 'success');
+            
+        } catch (error) {
+            console.error('Calculation error:', error);
+            hideLoading();
+            showError('Hesaplama sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+            showNotification('❌ Hesaplama hatası!', 'error');
+        }
+    }, 1500);
 }
 
-// Loading gösterimi
-function showLoading(show) {
+// Gelişmiş loading gösterimi
+function showLoading(show, message = 'Hesaplanıyor...', type = 'calculation') {
     const loading = document.getElementById('loading');
-    if (loading) {
-        loading.classList.toggle('show', show);
+    if (!loading) return;
+    
+    if (show) {
+        loading.innerHTML = `
+            <div class="loading-content">
+                <div class="loading-spinner ${type}">
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <div class="loading-text" role="status" aria-live="polite">
+                    <strong>${message}</strong>
+                </div>
+                <div class="loading-progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        `;
+        loading.classList.add('show');
+        document.body.style.overflow = 'hidden'; // Scroll'u engelle
+        
+        // Progress bar animasyonu
+        setTimeout(() => {
+            const progressBar = document.getElementById('progressBar');
+            if (progressBar) {
+                progressBar.style.width = '100%';
+            }
+        }, 100);
+        
+    } else {
+        loading.classList.remove('show');
+        document.body.style.overflow = ''; // Scroll'u geri aç
+        setTimeout(() => {
+            loading.innerHTML = '';
+        }, 300);
     }
+}
+
+// Özel loading mesajları
+function showCalculationLoading() {
+    showLoading(true, 'İmar hesaplamaları yapılıyor...', 'calculation');
+}
+
+function showExportLoading(format) {
+    showLoading(true, `${format} dosyası hazırlanıyor...`, 'export');
+}
+
+function hideLoading() {
+    showLoading(false);
 }
 
 // Şehir bazlı imar yönetmeliği güncelleme
@@ -442,6 +507,20 @@ function performCalculation() {
     updateVisualization();
     updateFloorPlan();
     showSuccessMessage(maxInsaatAlani);
+    
+    // Show export controls after successful calculation
+    showExportControls();
+    
+    // Update charts and 3D visualization
+    setTimeout(() => {
+        updateAllCharts();
+        update3DVisualization();
+    }, 1000);
+    
+    // Auto-generate PDF after calculation (optional)
+    setTimeout(() => {
+        autoGeneratePDF();
+    }, 2000);
 }
 
 // Sonuçları UI'da göster
@@ -463,43 +542,146 @@ function updateResultsUI() {
     });
 }
 
-// Form doğrulama
+// Gelişmiş form doğrulama
 function validateForm() {
     let isValid = true;
-    const requiredFields = [
-        { id: 'sehir', name: 'Şehir' },
-        { id: 'parselAlani', name: 'Parsel Alanı' },
-        { id: 'imarDurumu', name: 'İmar Durumu' }
+    const errors = [];
+    
+    const validationRules = [
+        { 
+            id: 'sehir', 
+            name: 'Şehir',
+            required: true,
+            validator: (value) => value && value !== ''
+        },
+        { 
+            id: 'parselAlani', 
+            name: 'Parsel Alanı',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 100000;
+            },
+            errorMessage: 'Parsel alanı 0-100,000 m² arasında olmalıdır'
+        },
+        { 
+            id: 'imarDurumu', 
+            name: 'İmar Durumu',
+            required: true,
+            validator: (value) => value && value !== ''
+        },
+        {
+            id: 'taban',
+            name: 'TAKS',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 1;
+            },
+            errorMessage: 'TAKS değeri 0-1 arasında olmalıdır'
+        },
+        {
+            id: 'emsal',
+            name: 'KAKS',
+            required: true,
+            validator: (value) => {
+                const num = parseFloat(value);
+                return !isNaN(num) && num > 0 && num <= 5;
+            },
+            errorMessage: 'KAKS değeri 0-5 arasında olmalıdır'
+        }
     ];
     
-    requiredFields.forEach(field => {
-        const element = document.getElementById(field.id);
+    // Validasyon kontrolü
+    validationRules.forEach(rule => {
+        const element = document.getElementById(rule.id);
         if (!element) return;
         
         const value = element.value.trim();
         
-        if (!value || (field.id === 'parselAlani' && parseFloat(value) <= 0)) {
+        try {
+            if (rule.required && !value) {
+                element.style.borderColor = '#ef4444';
+                element.setAttribute('aria-invalid', 'true');
+                errors.push(`${rule.name} alanı zorunludur`);
+                isValid = false;
+            } else if (value && !rule.validator(value)) {
+                element.style.borderColor = '#ef4444';
+                element.setAttribute('aria-invalid', 'true');
+                errors.push(rule.errorMessage || `${rule.name} geçersiz değer`);
+                isValid = false;
+            } else {
+                element.style.borderColor = '#10b981';
+                element.setAttribute('aria-invalid', 'false');
+            }
+        } catch (error) {
+            console.error(`Validation error for ${rule.name}:`, error);
             element.style.borderColor = '#ef4444';
+            errors.push(`${rule.name} doğrulanırken hata oluştu`);
             isValid = false;
-            console.log(`Validation failed for ${field.name}`);
-        } else {
-            element.style.borderColor = '#e5e7eb';
         }
     });
     
+    // Cross-field validation
+    if (isValid) {
+        const taksValue = parseFloat(document.getElementById('taban').value);
+        const kaksValue = parseFloat(document.getElementById('emsal').value);
+        
+        if (kaksValue < taksValue) {
+            errors.push('KAKS değeri TAKS değerinden küçük olamaz');
+            isValid = false;
+        }
+    }
+    
     if (!isValid) {
-        showError('Lütfen tüm zorunlu alanları doldurun!');
+        showError(errors.join('<br>'));
+    } else {
+        clearErrors();
     }
     
     return isValid;
 }
 
-// Hata mesajı göster
+// Gelişmiş hata mesajı göster
 function showError(message) {
     const imarNotlari = document.getElementById('imarNotlari');
     if (imarNotlari) {
-        imarNotlari.innerHTML = `<div class="error">❌ ${message}</div>`;
+        imarNotlari.innerHTML = `
+            <div class="error" role="alert" aria-live="polite">
+                <div class="error-header">
+                    <span class="error-icon">❌</span>
+                    <strong>Hata:</strong>
+                </div>
+                <div class="error-content">${message}</div>
+                <button class="error-close" onclick="clearErrors()" aria-label="Hatayı kapat">✕</button>
+            </div>
+        `;
     }
+    
+    // Accessibility için focus yönetimi
+    setTimeout(() => {
+        const errorElement = document.querySelector('.error');
+        if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }, 100);
+}
+
+// Hataları temizle
+function clearErrors() {
+    const imarNotlari = document.getElementById('imarNotlari');
+    if (imarNotlari) {
+        const errorElements = imarNotlari.querySelectorAll('.error');
+        errorElements.forEach(error => error.remove());
+    }
+    
+    // Input border renklerini sıfırla
+    document.querySelectorAll('input, select').forEach(input => {
+        if (input.style.borderColor === 'rgb(239, 68, 68)') {
+            input.style.borderColor = '#e5e7eb';
+            input.removeAttribute('aria-invalid');
+        }
+    });
 }
 
 // Başarı mesajı göster
@@ -968,9 +1150,1228 @@ function debugApp() {
     console.log('===============================');
 }
 
+// PDF Export Function
+function exportToPDF() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    showExportLoading('PDF');
+    
+    setTimeout(() => {
+        try {
+            const pdfContent = generatePDFContent();
+            downloadTextFile(pdfContent, 'pdf');
+            hideLoading();
+            showNotification('📄 PDF raporu başarıyla indirildi!', 'success');
+            
+            // Show export controls after first successful calculation
+            showExportControls();
+        } catch (error) {
+            console.error('PDF export error:', error);
+            hideLoading();
+            showError('PDF oluşturulurken hata oluştu.');
+        }
+    }, 1000);
+}
+
+// Excel Export Function
+function exportToExcel() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    showExportLoading('Excel');
+    
+    setTimeout(() => {
+        try {
+            const csvData = generateCSVData();
+            downloadTextFile(csvData, 'csv');
+            hideLoading();
+            showNotification('📊 Excel dosyası başarıyla indirildi!', 'success');
+        } catch (error) {
+            console.error('Excel export error:', error);
+            hideLoading();
+            showError('Excel dosyası oluşturulurken hata oluştu.');
+        }
+    }, 1000);
+}
+
+// Generate PDF content (simplified and clean)
+function generatePDFContent() {
+    const currentDate = new Date().toLocaleDateString('tr-TR');
+    const currentTime = new Date().toLocaleTimeString('tr-TR');
+    const city = document.getElementById('sehir').value;
+    const imarDurumu = document.getElementById('imarDurumu').options[document.getElementById('imarDurumu').selectedIndex].text;
+    
+    // Calculate totals
+    const totalApartments = blocks.reduce((total, block) => 
+        total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0);
+    
+    return `İMAR HESAPLAYICI PRO - HESAPLAMA RAPORU
+================================================
+
+Rapor Tarihi: ${currentDate} ${currentTime}
+Şehir: ${city.toUpperCase()}
+İmar Durumu: ${imarDurumu}
+
+TEMEL BİLGİLER
+================================================
+Parsel Alanı               : ${projectResults.parselAlani.toFixed(2)} m²
+TAKS Katsayısı             : ${document.getElementById('taban').value}
+KAKS Katsayısı             : ${document.getElementById('emsal').value}
+Kat Yüksekliği             : ${document.getElementById('katYuksekligi').value} m
+
+HESAPLAMA SONUÇLARI
+================================================
+Maksimum Taban Alanı       : ${projectResults.maxTabanAlani.toFixed(2)} m²
+Maksimum İnşaat Alanı      : ${projectResults.maxInsaatAlani.toFixed(2)} m²
+Maksimum Kat Sayısı        : ${projectResults.maxKatSayisi} kat
+Maksimum Yükseklik         : ${projectResults.maxYukseklik.toFixed(1)} m
+Açık Alan                  : ${projectResults.acikAlan.toFixed(2)} m²
+Yapılaşma Oranı            : %${projectResults.yapilasmaorani.toFixed(1)}
+
+BLOK PLANLAMA
+================================================
+Toplam Blok Sayısı         : ${blocks.length}
+Toplam Daire Sayısı        : ${totalApartments}
+
+${blocks.map(block => {
+    const apartmentList = Object.entries(block.apartments)
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(', ');
+    return `Blok ${block.id}: ${block.floors} kat, ${block.totalArea.toFixed(0)} m² (${apartmentList || 'Planlanmamış'})`;
+}).join('\n')}
+
+ÖZET
+================================================
+Kullanılabilir İnşaat Alanı: ${projectResults.maxInsaatAlani.toFixed(0)} m²
+Arsa Kullanım Verimliliği  : %${((projectResults.maxInsaatAlani / projectResults.parselAlani) * 100).toFixed(1)}
+Açık Alan Oranı            : %${((projectResults.acikAlan / projectResults.parselAlani) * 100).toFixed(1)}
+
+================================================
+Bu rapor bilgilendirme amaçlıdır.
+Resmi imar planlaması için yetkili kurumlara başvurunuz.
+
+İmar Hesaplayıcısı Pro v2.0.1
+© 2025 - Tüm hakları saklıdır`;
+}
+
+// Generate CSV data for Excel
+function generateCSVData() {
+    const data = [
+        ['İmar Hesaplayıcısı Pro - Excel Raporu', '', '', ''],
+        ['Rapor Tarihi', new Date().toLocaleDateString('tr-TR'), '', ''],
+        ['Şehir', document.getElementById('sehir').value.toUpperCase(), '', ''],
+        ['', '', '', ''],
+        ['TEMEL BİLGİLER', '', '', ''],
+        ['Alan/Değer', 'Birim', 'Değer', 'Açıklama'],
+        ['Parsel Alanı', 'm²', projectResults.parselAlani.toFixed(2), 'Toplam arsa alanı'],
+        ['TAKS', 'katsayı', document.getElementById('taban').value, 'Taban alanı katsayısı'],
+        ['KAKS', 'katsayı', document.getElementById('emsal').value, 'Kat alanı katsayısı'],
+        ['Kat Yüksekliği', 'm', document.getElementById('katYuksekligi').value, 'Standart kat yüksekliği'],
+        ['', '', '', ''],
+        ['HESAPLAMA SONUÇLARI', '', '', ''],
+        ['Sonuç', 'Birim', 'Değer', 'Açıklama'],
+        ['Maksimum Taban Alanı', 'm²', projectResults.maxTabanAlani.toFixed(2), 'Yapılabilecek taban alanı'],
+        ['Maksimum İnşaat Alanı', 'm²', projectResults.maxInsaatAlani.toFixed(2), 'Toplam inşaat alanı'],
+        ['Maksimum Kat Sayısı', 'kat', projectResults.maxKatSayisi, 'İzin verilen kat sayısı'],
+        ['Maksimum Yükseklik', 'm', projectResults.maxYukseklik.toFixed(1), 'Toplam bina yüksekliği'],
+        ['Açık Alan', 'm²', projectResults.acikAlan.toFixed(2), 'Yeşil alan ve açık alanlar'],
+        ['Yapılaşma Oranı', '%', projectResults.yapilasmaorani.toFixed(1), 'Arsa kullanım oranı'],
+        ['', '', '', ''],
+        ['BLOK DETAYLARI', '', '', '']
+    ];
+    
+    // Blok başlıkları
+    data.push(['Blok No', 'Kat Sayısı', 'Toplam Alan (m²)', 'Daire Dağılımı']);
+    
+    // Blok verileri
+    blocks.forEach(block => {
+        const apartmentDetails = Object.entries(block.apartments)
+            .map(([type, count]) => `${type}:${count}`)
+            .join(' | ');
+        
+        data.push([
+            `Blok ${block.id}`,
+            block.floors,
+            block.totalArea.toFixed(0),
+            apartmentDetails || 'Planlanmamış'
+        ]);
+    });
+    
+    return data.map(row => 
+        row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+}
+
+// Download file function
+function downloadTextFile(content, type) {
+    const mimeTypes = {
+        'pdf': 'text/plain',
+        'csv': 'text/csv'
+    };
+    
+    const extensions = {
+        'pdf': 'txt', // Simple text for now, can be upgraded to real PDF later
+        'csv': 'csv'
+    };
+    
+    const blob = new Blob(['\ufeff' + content], { 
+        type: `${mimeTypes[type]};charset=utf-8` 
+    });
+    
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `imar_raporu_${new Date().toISOString().split('T')[0]}.${extensions[type]}`;
+    a.style.display = 'none';
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+// Web Share API
+function shareResults() {
+    if (!projectResults.parselAlani) {
+        showError('Önce hesaplama yapmalısınız!');
+        return;
+    }
+    
+    const shareData = {
+        title: 'İmar Hesaplayıcısı Pro - Hesaplama Sonuçları',
+        text: `${projectResults.parselAlani}m² parsel için hesaplama tamamlandı. ${projectResults.maxInsaatAlani.toFixed(0)}m² inşaat alanı, ${blocks.length} blok planlandı. Toplam ${blocks.reduce((total, block) => total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0)} daire.`,
+        url: window.location.href
+    };
+    
+    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        navigator.share(shareData)
+            .then(() => showNotification('🔗 Sonuçlar başarıyla paylaşıldı!', 'success'))
+            .catch(error => {
+                console.log('Share error:', error);
+                fallbackShare(shareData);
+            });
+    } else {
+        fallbackShare(shareData);
+    }
+}
+
+// Fallback share (clipboard)
+function fallbackShare(shareData) {
+    const shareText = `${shareData.title}\n\n${shareData.text}\n\n🔗 ${shareData.url}`;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareText)
+            .then(() => showNotification('📋 Sonuçlar panoya kopyalandı!', 'success'))
+            .catch(() => showError('Paylaşım sırasında hata oluştu.'));
+    } else {
+        // Legacy fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showNotification('📋 Sonuçlar panoya kopyalandı!', 'success');
+            } else {
+                showError('Paylaşım sırasında hata oluştu.');
+            }
+        } catch (err) {
+            showError('Paylaşım sırasında hata oluştu.');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+}
+
+// Show export controls after calculation
+function showExportControls() {
+    const exportControls = document.getElementById('exportControls');
+    if (exportControls) {
+        exportControls.style.display = 'block';
+        exportControls.style.animation = 'slideInSuccess 0.3s ease-out';
+    }
+}
+
+// Theme Management Functions
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    const themeText = newTheme === 'dark' ? 'Koyu tema' : 'Açık tema';
+    showNotification(`🎨 ${themeText} aktif edildi`, 'success');
+    
+    // Update button accessibility
+    const toggleBtn = document.querySelector('.theme-toggle');
+    if (toggleBtn) {
+        toggleBtn.setAttribute('aria-label', 
+            newTheme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'
+        );
+    }
+}
+
+// Initialize theme
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+    
+    document.documentElement.setAttribute('data-theme', theme);
+}
+
+// ===== ADVANCED CHARTS SYSTEM =====
+let chartInstances = {};
+
+// Chart color schemes
+const chartColors = {
+    primary: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#06b6d4'],
+    gradients: [
+        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+    ]
+};
+
+// Create Area Distribution Chart (Pie Chart)
+function createAreaChart() {
+    const ctx = document.getElementById('areaChart').getContext('2d');
+    
+    if (chartInstances.areaChart) {
+        chartInstances.areaChart.destroy();
+    }
+    
+    const data = {
+        labels: ['İnşaat Alanı', 'Açık Alan', 'Otopark Alanı', 'Yeşil Alan'],
+        datasets: [{
+            data: [
+                projectResults.maxInsaatAlani,
+                projectResults.acikAlan,
+                projectResults.maxInsaatAlani * 0.15, // Estimated parking
+                projectResults.acikAlan * 0.6 // Estimated green area
+            ],
+            backgroundColor: [
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(34, 197, 94, 0.8)'
+            ],
+            borderColor: [
+                'rgb(59, 130, 246)',
+                'rgb(16, 185, 129)',
+                'rgb(245, 158, 11)',
+                'rgb(34, 197, 94)'
+            ],
+            borderWidth: 2,
+            hoverOffset: 10
+        }]
+    };
+
+    const config = {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value.toFixed(0)} m² (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 1500
+            }
+        }
+    };
+
+    chartInstances.areaChart = new Chart(ctx, config);
+}
+
+// Create Block Analysis Chart (Bar Chart)
+function createBlockChart() {
+    const ctx = document.getElementById('blockChart').getContext('2d');
+    
+    if (chartInstances.blockChart) {
+        chartInstances.blockChart.destroy();
+    }
+
+    const blockData = blocks.map(block => ({
+        label: `Blok ${block.id}`,
+        floors: block.floors,
+        area: block.totalArea,
+        apartments: Object.values(block.apartments).reduce((sum, count) => sum + count, 0)
+    }));
+
+    const data = {
+        labels: blockData.map(b => b.label),
+        datasets: [
+            {
+                label: 'Kat Sayısı',
+                data: blockData.map(b => b.floors),
+                backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                borderColor: 'rgb(59, 130, 246)',
+                borderWidth: 2,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Alan (m² / 100)',
+                data: blockData.map(b => b.area / 100),
+                backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                borderColor: 'rgb(16, 185, 129)',
+                borderWidth: 2,
+                yAxisID: 'y'
+            },
+            {
+                label: 'Daire Sayısı',
+                data: blockData.map(b => b.apartments),
+                backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                borderColor: 'rgb(245, 158, 11)',
+                borderWidth: 2,
+                yAxisID: 'y1'
+            }
+        ]
+    };
+
+    const config = {
+        type: 'bar',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Bloklar'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Kat Sayısı / Alan (m²/100)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Daire Sayısı'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            animation: {
+                duration: 1500,
+                easing: 'easeInOutQuart'
+            }
+        }
+    };
+
+    chartInstances.blockChart = new Chart(ctx, config);
+}
+
+// Create Apartment Distribution Chart (Pie Chart)
+function createApartmentChart() {
+    const ctx = document.getElementById('apartmentChart').getContext('2d');
+    
+    if (chartInstances.apartmentChart) {
+        chartInstances.apartmentChart.destroy();
+    }
+
+    // Aggregate apartment types across all blocks
+    const apartmentTotals = {};
+    blocks.forEach(block => {
+        Object.entries(block.apartments).forEach(([type, count]) => {
+            apartmentTotals[type] = (apartmentTotals[type] || 0) + count;
+        });
+    });
+
+    const data = {
+        labels: Object.keys(apartmentTotals),
+        datasets: [{
+            data: Object.values(apartmentTotals),
+            backgroundColor: [
+                'rgba(139, 92, 246, 0.8)',
+                'rgba(59, 130, 246, 0.8)',
+                'rgba(16, 185, 129, 0.8)',
+                'rgba(245, 158, 11, 0.8)',
+                'rgba(239, 68, 68, 0.8)'
+            ],
+            borderColor: [
+                'rgb(139, 92, 246)',
+                'rgb(59, 130, 246)',
+                'rgb(16, 185, 129)',
+                'rgb(245, 158, 11)',
+                'rgb(239, 68, 68)'
+            ],
+            borderWidth: 2,
+            hoverOffset: 8
+        }]
+    };
+
+    const config = {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} adet (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateRotate: true,
+                duration: 1500
+            }
+        }
+    };
+
+    chartInstances.apartmentChart = new Chart(ctx, config);
+}
+
+// Create Efficiency Analysis Chart (Radar Chart)
+function createEfficiencyChart() {
+    const ctx = document.getElementById('efficiencyChart').getContext('2d');
+    
+    if (chartInstances.efficiencyChart) {
+        chartInstances.efficiencyChart.destroy();
+    }
+
+    // Calculate efficiency metrics
+    const tabanKullanimOrani = (projectResults.maxTabanAlani / projectResults.parselAlani) * 100;
+    const emsalKullanimOrani = (projectResults.maxInsaatAlani / (projectResults.parselAlani * parseFloat(document.getElementById('emsal').value))) * 100;
+    const yukseklikVerimliligi = (projectResults.maxYukseklik / projectResults.maxYukseklikLimit) * 100;
+    const acikAlanOrani = (projectResults.acikAlan / projectResults.parselAlani) * 100;
+    const yapilasmaDengeisi = Math.min(100, (100 - Math.abs(tabanKullanimOrani - emsalKullanimOrani)));
+
+    const data = {
+        labels: [
+            'Taban Alan Kullanımı',
+            'Emsal Kullanımı', 
+            'Yükseklik Verimliliği',
+            'Açık Alan Oranı',
+            'Yapılaşma Dengesi'
+        ],
+        datasets: [{
+            label: 'Mevcut Proje',
+            data: [tabanKullanimOrani, emsalKullanimOrani, yukseklikVerimliligi, acikAlanOrani, yapilasmaDengeisi],
+            fill: true,
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgb(59, 130, 246)',
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(59, 130, 246)',
+            borderWidth: 2,
+            pointRadius: 4
+        }, {
+            label: 'Optimal Değerler',
+            data: [85, 90, 80, 40, 95],
+            fill: true,
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            borderColor: 'rgb(16, 185, 129)',
+            pointBackgroundColor: 'rgb(16, 185, 129)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(16, 185, 129)',
+            borderWidth: 2,
+            pointRadius: 4,
+            borderDash: [5, 5]
+        }]
+    };
+
+    const config = {
+        type: 'radar',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            elements: {
+                line: {
+                    borderWidth: 3
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: {
+                        display: true
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: {
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.r.toFixed(1)}%`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    };
+
+    chartInstances.efficiencyChart = new Chart(ctx, config);
+}
+
+// Update all charts after calculation
+function updateAllCharts() {
+    if (!projectResults.parselAlani) return;
+    
+    setTimeout(() => {
+        createAreaChart();
+        createBlockChart();
+        createApartmentChart();
+        createEfficiencyChart();
+        
+        // Also create mobile charts
+        createMobileCharts();
+    }, 500); // Small delay for smooth animation
+}
+
+// Create mobile-specific charts
+function createMobileCharts() {
+    // Mobile Area Chart
+    const mobileAreaCtx = document.getElementById('mobileAreaCanvas');
+    if (mobileAreaCtx) {
+        createMobileAreaChart();
+    }
+    
+    // Mobile Block Chart
+    const mobileBlockCtx = document.getElementById('mobileBlockCanvas');
+    if (mobileBlockCtx) {
+        createMobileBlockChart();
+    }
+    
+    // Mobile Apartment Chart
+    const mobileApartmentCtx = document.getElementById('mobileApartmentCanvas');
+    if (mobileApartmentCtx) {
+        createMobileApartmentChart();
+    }
+    
+    // Mobile Efficiency Chart
+    const mobileEfficiencyCtx = document.getElementById('mobileEfficiencyCanvas');
+    if (mobileEfficiencyCtx) {
+        createMobileEfficiencyChart();
+    }
+}
+
+// Mobile chart creation functions (optimized for mobile)
+function createMobileAreaChart() {
+    const ctx = document.getElementById('mobileAreaCanvas').getContext('2d');
+    
+    if (chartInstances.mobileAreaChart) {
+        chartInstances.mobileAreaChart.destroy();
+    }
+    
+    const data = {
+        labels: ['İnşaat Alanı', 'Açık Alan', 'Otopark', 'Yeşil Alan'],
+        datasets: [{
+            data: [
+                projectResults.maxInsaatAlani,
+                projectResults.acikAlan,
+                projectResults.maxInsaatAlani * 0.15,
+                projectResults.acikAlan * 0.6
+            ],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#22c55e'],
+            borderWidth: 0
+        }]
+    };
+
+    chartInstances.mobileAreaChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 10, font: { size: 12 } }
+                }
+            }
+        }
+    });
+}
+
+function createMobileBlockChart() {
+    const ctx = document.getElementById('mobileBlockCanvas').getContext('2d');
+    
+    if (chartInstances.mobileBlockChart) {
+        chartInstances.mobileBlockChart.destroy();
+    }
+    
+    const blockData = blocks.map(block => ({
+        label: `Blok ${block.id}`,
+        floors: block.floors,
+        apartments: Object.values(block.apartments).reduce((sum, count) => sum + count, 0)
+    }));
+
+    chartInstances.mobileBlockChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: blockData.map(b => b.label),
+            datasets: [{
+                label: 'Kat Sayısı',
+                data: blockData.map(b => b.floors),
+                backgroundColor: '#3b82f6'
+            }, {
+                label: 'Daire Sayısı',
+                data: blockData.map(b => b.apartments),
+                backgroundColor: '#f59e0b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+}
+
+function createMobileApartmentChart() {
+    const ctx = document.getElementById('mobileApartmentCanvas').getContext('2d');
+    
+    if (chartInstances.mobileApartmentChart) {
+        chartInstances.mobileApartmentChart.destroy();
+    }
+    
+    const apartmentTotals = {};
+    blocks.forEach(block => {
+        Object.entries(block.apartments).forEach(([type, count]) => {
+            apartmentTotals[type] = (apartmentTotals[type] || 0) + count;
+        });
+    });
+
+    chartInstances.mobileApartmentChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(apartmentTotals),
+            datasets: [{
+                data: Object.values(apartmentTotals),
+                backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 10 } }
+            }
+        }
+    });
+}
+
+function createMobileEfficiencyChart() {
+    const ctx = document.getElementById('mobileEfficiencyCanvas').getContext('2d');
+    
+    if (chartInstances.mobileEfficiencyChart) {
+        chartInstances.mobileEfficiencyChart.destroy();
+    }
+    
+    const tabanKullanimOrani = (projectResults.maxTabanAlani / projectResults.parselAlani) * 100;
+    const emsalKullanimOrani = (projectResults.maxInsaatAlani / (projectResults.parselAlani * parseFloat(document.getElementById('emsal').value))) * 100;
+    const yukseklikVerimliligi = (projectResults.maxYukseklik / projectResults.maxYukseklikLimit) * 100;
+    const acikAlanOrani = (projectResults.acikAlan / projectResults.parselAlani) * 100;
+    const yapilasmaDengeisi = Math.min(100, (100 - Math.abs(tabanKullanimOrani - emsalKullanimOrani)));
+
+    chartInstances.mobileEfficiencyChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Taban Alan', 'Emsal', 'Yükseklik', 'Açık Alan', 'Denge'],
+            datasets: [{
+                label: 'Mevcut',
+                data: [tabanKullanimOrani, emsalKullanimOrani, yukseklikVerimliligi, acikAlanOrani, yapilasmaDengeisi],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: { suggestedMin: 0, suggestedMax: 100 }
+            }
+        }
+    });
+}
+
+// Switch mobile chart
+function switchMobileChart(chartType) {
+    const mobileCharts = document.querySelectorAll('.mobile-single-chart .chart-item');
+    mobileCharts.forEach(chart => chart.classList.remove('active'));
+    
+    const targetChart = document.getElementById(`mobile${chartType.charAt(0).toUpperCase() + chartType.slice(1)}Chart`);
+    if (targetChart) {
+        targetChart.classList.add('active');
+    }
+}
+
+// Auto-generate PDF after calculation
+function autoGeneratePDF() {
+    if (!projectResults.parselAlani) return;
+    
+    try {
+        const pdfContent = generatePDFContent();
+        downloadTextFile(pdfContent, 'pdf');
+        
+        // Show success notification
+        showNotification('📄 Hesaplama raporu otomatik olarak indirildi!', 'success');
+        
+        console.log('Auto PDF generated successfully');
+    } catch (error) {
+        console.error('Auto PDF generation failed:', error);
+        // Don't show error to user for auto-generation, just log it
+    }
+}
+
+// Switch between 3D and Charts view
+function switchVisualization(type) {
+    const tabs = document.querySelectorAll('.viz-tab');
+    const containers = document.querySelectorAll('.visualization-content');
+    
+    tabs.forEach(tab => tab.classList.remove('active'));
+    containers.forEach(container => container.classList.remove('active'));
+    
+    document.querySelector(`[data-tab="${type}"]`).classList.add('active');
+    document.getElementById(`${type}-container`).classList.add('active');
+    
+    if (type === 'charts' && projectResults.parselAlani) {
+        // Delay chart creation to ensure container is visible
+        setTimeout(updateAllCharts, 100);
+    } else if (type === '3d' && projectResults.parselAlani) {
+        setTimeout(update3DVisualization, 100);
+    }
+}
+
+// ===== 3D VISUALIZATION SYSTEM =====
+let scene, camera, renderer, controls;
+let buildingGroup, animationId;
+let is3DInitialized = false;
+let wireframeMode = false;
+let animationEnabled = false;
+
+// Initialize 3D Scene
+function init3DScene() {
+    const container = document.getElementById('buildingVisual3D');
+    if (!container || is3DInitialized) return;
+    
+    // Clear placeholder content
+    container.innerHTML = '';
+    
+    // Scene setup
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+    scene.fog = new THREE.Fog(0xf0f0f0, 50, 200);
+    
+    // Camera setup
+    const containerRect = container.getBoundingClientRect();
+    camera = new THREE.PerspectiveCamera(75, containerRect.width / containerRect.height, 0.1, 1000);
+    camera.position.set(30, 30, 30);
+    
+    // Renderer setup
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(containerRect.width, containerRect.height);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+    
+    // Controls setup (using OrbitControls if available)
+    if (typeof THREE.OrbitControls !== 'undefined') {
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.minDistance = 10;
+        controls.maxDistance = 100;
+        controls.maxPolarAngle = Math.PI / 2.1;
+    }
+    
+    // Lighting setup
+    setupLighting();
+    
+    // Ground plane
+    createGround();
+    
+    // Building group
+    buildingGroup = new THREE.Group();
+    scene.add(buildingGroup);
+    
+    is3DInitialized = true;
+    
+    // Start animation loop
+    animate3D();
+    
+    // Show 3D controls
+    document.getElementById('3d-controls').style.display = 'flex';
+    
+    console.log('3D Scene initialized successfully');
+}
+
+// Setup 3D Lighting
+function setupLighting() {
+    // Ambient light
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    scene.add(ambientLight);
+    
+    // Directional light (sun)
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(50, 50, 25);
+    directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 200;
+    directionalLight.shadow.camera.left = -50;
+    directionalLight.shadow.camera.right = 50;
+    directionalLight.shadow.camera.top = 50;
+    directionalLight.shadow.camera.bottom = -50;
+    scene.add(directionalLight);
+    
+    // Point light for better illumination
+    const pointLight = new THREE.PointLight(0xffffff, 0.5, 100);
+    pointLight.position.set(0, 20, 0);
+    scene.add(pointLight);
+}
+
+// Create ground plane
+function createGround() {
+    const groundGeometry = new THREE.PlaneGeometry(100, 100);
+    const groundMaterial = new THREE.MeshLambertMaterial({ 
+        color: 0x90EE90,
+        transparent: true,
+        opacity: 0.8
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    
+    // Grid helper
+    const gridHelper = new THREE.GridHelper(100, 50, 0x888888, 0xcccccc);
+    gridHelper.position.y = 0.01;
+    scene.add(gridHelper);
+}
+
+// Create 3D building model
+function create3DBuildingModel() {
+    if (!buildingGroup) return;
+    
+    // Clear previous buildings
+    buildingGroup.clear();
+    
+    if (!projectResults.parselAlani || blocks.length === 0) return;
+    
+    // Calculate scale based on parcel size
+    const scale = Math.min(40 / Math.sqrt(projectResults.parselAlani), 1);
+    
+    // Create parcel boundary
+    createParcelBoundary(scale);
+    
+    // Create buildings for each block
+    blocks.forEach((block, index) => {
+        create3DBlock(block, index, scale);
+    });
+    
+    console.log(`Created 3D model with ${blocks.length} blocks`);
+}
+
+// Create parcel boundary
+function createParcelBoundary(scale) {
+    const parcelSize = Math.sqrt(projectResults.parselAlani) * scale;
+    
+    // Parcel outline
+    const parcelGeometry = new THREE.PlaneGeometry(parcelSize, parcelSize);
+    const parcelMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x333333,
+        transparent: true,
+        opacity: 0.1,
+        side: THREE.DoubleSide
+    });
+    const parcelMesh = new THREE.Mesh(parcelGeometry, parcelMaterial);
+    parcelMesh.rotation.x = -Math.PI / 2;
+    parcelMesh.position.y = 0.02;
+    buildingGroup.add(parcelMesh);
+    
+    // Parcel border
+    const borderGeometry = new THREE.EdgesGeometry(parcelGeometry);
+    const borderMaterial = new THREE.LineBasicMaterial({ color: 0x333333, linewidth: 2 });
+    const borderLines = new THREE.LineSegments(borderGeometry, borderMaterial);
+    borderLines.rotation.x = -Math.PI / 2;
+    borderLines.position.y = 0.03;
+    buildingGroup.add(borderLines);
+}
+
+// Create 3D block
+function create3DBlock(block, index, scale) {
+    const parcelSize = Math.sqrt(projectResults.parselAlani) * scale;
+    const blockSpacing = parcelSize / Math.max(2, Math.ceil(Math.sqrt(blocks.length)));
+    
+    // Calculate block position
+    const cols = Math.ceil(Math.sqrt(blocks.length));
+    const row = Math.floor(index / cols);
+    const col = index % cols;
+    
+    const x = (col - (cols - 1) / 2) * blockSpacing;
+    const z = (row - (Math.ceil(blocks.length / cols) - 1) / 2) * blockSpacing;
+    
+    // Building dimensions
+    const buildingWidth = blockSpacing * 0.6;
+    const buildingDepth = blockSpacing * 0.6;
+    const floorHeight = 3;
+    const buildingHeight = block.floors * floorHeight;
+    
+    // Create building geometry
+    const buildingGeometry = new THREE.BoxGeometry(buildingWidth, buildingHeight, buildingDepth);
+    
+    // Building material with color variation
+    const colors = [0x4f46e5, 0x059669, 0xdc2626, 0xf59e0b, 0x8b5cf6];
+    const buildingColor = colors[index % colors.length];
+    
+    const buildingMaterial = new THREE.MeshLambertMaterial({ 
+        color: buildingColor,
+        transparent: true,
+        opacity: 0.8
+    });
+    
+    const building = new THREE.Mesh(buildingGeometry, buildingMaterial);
+    building.position.set(x, buildingHeight / 2, z);
+    building.castShadow = true;
+    building.receiveShadow = true;
+    
+    // Add building to group
+    buildingGroup.add(building);
+    
+    // Create floor separators
+    for (let floor = 1; floor < block.floors; floor++) {
+        const separatorGeometry = new THREE.PlaneGeometry(buildingWidth + 0.2, buildingDepth + 0.2);
+        const separatorMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0x333333,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        const separator = new THREE.Mesh(separatorGeometry, separatorMaterial);
+        separator.position.set(x, floor * floorHeight, z);
+        separator.rotation.x = -Math.PI / 2;
+        buildingGroup.add(separator);
+    }
+    
+    // Add building label
+    createBuildingLabel(block, x, buildingHeight + 2, z);
+    
+    // Store reference for interaction
+    building.userData = { blockId: block.id, blockData: block };
+}
+
+// Create building label
+function createBuildingLabel(block, x, y, z) {
+    // Create a simple text representation using a small plane
+    const labelGeometry = new THREE.PlaneGeometry(3, 1);
+    const labelMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9
+    });
+    const label = new THREE.Mesh(labelGeometry, labelMaterial);
+    label.position.set(x, y, z);
+    label.lookAt(camera.position);
+    buildingGroup.add(label);
+    
+    // In a real implementation, you'd use THREE.TextGeometry or a canvas texture
+    // For now, we'll use a simple colored plane as a placeholder
+}
+
+// Animation loop
+function animate3D() {
+    if (!renderer || !scene || !camera) return;
+    
+    animationId = requestAnimationFrame(animate3D);
+    
+    // Update controls
+    if (controls) {
+        controls.update();
+    }
+    
+    // Building animation
+    if (animationEnabled && buildingGroup) {
+        buildingGroup.rotation.y += 0.005;
+    }
+    
+    // Render scene
+    renderer.render(scene, camera);
+}
+
+// Update 3D visualization after calculation
+function update3DVisualization() {
+    if (!projectResults.parselAlani) return;
+    
+    if (!is3DInitialized) {
+        init3DScene();
+    }
+    
+    create3DBuildingModel();
+    
+    // Animate camera to show the new model
+    if (camera && controls) {
+        const targetDistance = Math.max(20, Math.sqrt(projectResults.parselAlani) * 0.1);
+        camera.position.set(targetDistance, targetDistance, targetDistance);
+        camera.lookAt(0, 0, 0);
+        if (controls.update) controls.update();
+    }
+}
+
+// 3D Control functions
+function reset3DView() {
+    if (camera && controls) {
+        camera.position.set(30, 30, 30);
+        camera.lookAt(0, 0, 0);
+        if (controls.reset) controls.reset();
+        if (controls.update) controls.update();
+        
+        showNotification('🔄 3D görünüm sıfırlandı', 'success');
+    }
+}
+
+function toggle3DWireframe() {
+    if (!buildingGroup) return;
+    
+    wireframeMode = !wireframeMode;
+    
+    buildingGroup.traverse((child) => {
+        if (child.isMesh && child.material) {
+            child.material.wireframe = wireframeMode;
+        }
+    });
+    
+    const modeText = wireframeMode ? 'Wireframe' : 'Normal';
+    showNotification(`📐 ${modeText} modu aktif`, 'success');
+}
+
+function toggle3DAnimation() {
+    animationEnabled = !animationEnabled;
+    
+    const statusText = animationEnabled ? 'başlatıldı' : 'durduruldu';
+    const icon = animationEnabled ? '▶️' : '⏸️';
+    showNotification(`${icon} Animasyon ${statusText}`, 'success');
+    
+    // Update button text
+    const animBtn = document.querySelector('[onclick="toggle3DAnimation()"]');
+    if (animBtn) {
+        animBtn.innerHTML = `${animationEnabled ? '⏸️' : '▶️'} ${animationEnabled ? 'Durdur' : 'Animasyon'}`;
+    }
+}
+
+// Handle window resize for 3D
+function handle3DResize() {
+    if (!renderer || !camera) return;
+    
+    const container = document.getElementById('buildingVisual3D');
+    if (!container) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    
+    camera.aspect = containerRect.width / containerRect.height;
+    camera.updateProjectionMatrix();
+    
+    renderer.setSize(containerRect.width, containerRect.height);
+}
+
+// Add window resize listener
+window.addEventListener('resize', handle3DResize);
+
 // Global scope'a PWA fonksiyonları ekle
 window.installPWA = installPWA;
 window.hideInstallBanner = hideInstallBanner;
 window.updateBlockFloors = updateBlockFloors;
 window.switchTab = switchTab;
-window.debugApp = debugApp;   
+window.debugApp = debugApp;
+window.exportToPDF = exportToPDF;
+window.exportToExcel = exportToExcel;
+window.shareResults = shareResults;
+window.toggleTheme = toggleTheme;
+window.switchVisualization = switchVisualization;
+window.reset3DView = reset3DView;
+window.toggle3DWireframe = toggle3DWireframe;
+window.toggle3DAnimation = toggle3DAnimation;

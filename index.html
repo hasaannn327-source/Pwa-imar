@@ -17,12 +17,29 @@
     
     <!-- CSS Dosyası -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    
+    <!-- Three.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
-            <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
+            <div class="header-content">
+                <div class="title-section">
+                    <h1>🏗️ Profesyonel İmar Hesaplayıcısı Pro</h1>
+                    <p>Çoklu Blok, Daire Planlaması ve Şehir Bazlı İmar Yönetmelikleri</p>
+                </div>
+                <div class="header-controls">
+                    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Tema değiştir" title="Koyu/Açık tema arasında geçiş yap">
+                        <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+                        <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="main-grid">
@@ -32,7 +49,7 @@
                 <form id="calculatorForm">
                     <div class="input-group">
                         <label for="sehir">Şehir/İl *</label>
-                        <select id="sehir" name="sehir" required>
+                        <select id="sehir" name="sehir" required aria-describedby="sehir-help" aria-label="Proje şehrini seçin">
                             <option value="">Seçiniz</option>
                             <option value="istanbul">İstanbul</option>
                             <option value="ankara">Ankara</option>
@@ -45,16 +62,18 @@
                             <option value="kayseri">Kayseri</option>
                             <option value="diger">Diğer</option>
                         </select>
+                        <small id="sehir-help" class="input-help">Şehir seçimi imar yönetmeliklerini belirler</small>
                     </div>
 
                     <div class="input-group">
                         <label for="parselAlani">Parsel Alanı (m²) *</label>
-                        <input type="number" id="parselAlani" name="parselAlani" min="100" step="0.01" placeholder="örn: 1000" required>
+                        <input type="number" id="parselAlani" name="parselAlani" min="100" max="100000" step="0.01" placeholder="örn: 1000" required aria-describedby="parsel-help" aria-label="Parsel alanını metrekare cinsinden girin">
+                        <small id="parsel-help" class="input-help">100-100,000 m² arasında bir değer girin</small>
                     </div>
 
                     <div class="input-group">
                         <label for="imarDurumu">İmar Durumu *</label>
-                        <select id="imarDurumu" name="imarDurumu" required>
+                        <select id="imarDurumu" name="imarDurumu" required aria-describedby="imar-help" aria-label="İmar durumunu seçin">
                             <option value="">Seçiniz</option>
                             <option value="konut-1">Konut Alanı (E=1.0)</option>
                             <option value="konut-2">Konut Alanı (E=1.5)</option>
@@ -63,24 +82,32 @@
                             <option value="karma">Karma Kullanım</option>
                             <option value="turizm">Turizm Alanı</option>
                         </select>
+                        <small id="imar-help" class="input-help">İmar durumu TAKS/KAKS değerlerini otomatik ayarlar</small>
                     </div>
 
                     <div class="input-group">
                         <label for="taban">TAKS (Taban Alanı Katsayısı)</label>
-                        <input type="number" id="taban" name="taban" min="0.1" max="0.8" step="0.01" value="0.30" placeholder="0.30">
+                        <input type="number" id="taban" name="taban" min="0.1" max="1" step="0.01" value="0.30" placeholder="0.30" aria-describedby="taks-help" aria-label="TAKS değerini girin">
+                        <small id="taks-help" class="input-help">Taban Alanı Katsayısı (0.1-1.0 arası)</small>
                     </div>
 
                     <div class="input-group">
-                        <label for="emsal">EMSAL (Emsal Katsayısı)</label>
-                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00" placeholder="1.00">
+                        <label for="emsal">KAKS (Kat Alanı Katsayısı)</label>
+                        <input type="number" id="emsal" name="emsal" min="0.1" max="5" step="0.01" value="1.00" placeholder="1.00" aria-describedby="kaks-help" aria-label="KAKS değerini girin">
+                        <small id="kaks-help" class="input-help">Kat Alanı Katsayısı (0.1-5.0 arası, TAKS'tan büyük olmalı)</small>
                     </div>
 
                     <div class="input-group">
                         <label for="katYuksekligi">Kat Yüksekliği (m)</label>
-                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0">
+                        <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0" aria-describedby="yukseklik-help" aria-label="Kat yüksekliğini metre cinsinden girin">
+                        <small id="yukseklik-help" class="input-help">Standart kat yüksekliği 2.5-4.0 metre arası</small>
                     </div>
 
-                    <button type="submit" class="calculate-btn">🔧 Hesapla</button>
+                    <button type="submit" class="calculate-btn" aria-describedby="calc-help">
+                        <span class="btn-icon" aria-hidden="true">🔧</span>
+                        <span class="btn-text">Detaylı Hesaplama Yap</span>
+                    </button>
+                    <small id="calc-help" class="input-help">Tüm imar hesaplamalarını başlatır</small>
                 </form>
 
                 <div class="loading" id="loading">
@@ -194,13 +221,82 @@
                 </div>
             </div>
 
-            <!-- Görselleştirme -->
+            <!-- 3D Görselleştirme -->
             <div class="panel">
-                <h3>🏗️ Yerleşim Planı</h3>
-                <div class="building-visual" id="buildingVisual">
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">🏗️</div>
-                        <p>Hesaplama sonrası<br>yerleşim planı görüntülenecek</p>
+                <h3>🏗️ 3D Bina Görselleştirme</h3>
+                <div class="visualization-tabs">
+                    <button class="viz-tab active" onclick="switchVisualization('3d')" data-tab="3d">
+                        🏗️ 3D Model
+                    </button>
+                    <button class="viz-tab" onclick="switchVisualization('charts')" data-tab="charts">
+                        📊 Grafikler
+                    </button>
+                </div>
+                
+                <div id="3d-container" class="visualization-content active">
+                    <div class="building-visual-3d" id="buildingVisual3D">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🏗️</div>
+                            <p>Hesaplama sonrası<br>3D model görüntülenecek</p>
+                        </div>
+                    </div>
+                    <div class="3d-controls" id="3d-controls" style="display: none;">
+                        <button onclick="reset3DView()" class="control-btn">🔄 Sıfırla</button>
+                        <button onclick="toggle3DWireframe()" class="control-btn">📐 Wireframe</button>
+                        <button onclick="toggle3DAnimation()" class="control-btn">▶️ Animasyon</button>
+                    </div>
+                </div>
+                
+                <div id="charts-container" class="visualization-content">
+                    <!-- Mobile Chart Selector -->
+                    <div class="mobile-chart-selector" id="mobileChartSelector">
+                        <label for="chartSelect">📊 Grafik Seçin:</label>
+                        <select id="chartSelect" onchange="switchMobileChart(this.value)">
+                            <option value="area">📊 Alan Dağılımı</option>
+                            <option value="block">🏢 Blok Analizi</option>
+                            <option value="apartment">🏠 Daire Dağılımı</option>
+                            <option value="efficiency">📈 Verimlilik Analizi</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Desktop Charts Grid -->
+                    <div class="charts-grid desktop-charts">
+                        <div class="chart-item">
+                            <h4>📊 Alan Dağılımı</h4>
+                            <canvas id="areaChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>🏢 Blok Analizi</h4>
+                            <canvas id="blockChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>🏠 Daire Dağılımı</h4>
+                            <canvas id="apartmentChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>📈 Verimlilik Analizi</h4>
+                            <canvas id="efficiencyChart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Single Chart Container -->
+                    <div class="mobile-single-chart" id="mobileSingleChart">
+                        <div class="chart-item active" id="mobileAreaChart">
+                            <h4>📊 Alan Dağılımı</h4>
+                            <canvas id="mobileAreaCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileBlockChart">
+                            <h4>🏢 Blok Analizi</h4>
+                            <canvas id="mobileBlockCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileApartmentChart">
+                            <h4>🏠 Daire Dağılımı</h4>
+                            <canvas id="mobileApartmentCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileEfficiencyChart">
+                            <h4>📈 Verimlilik Analizi</h4>
+                            <canvas id="mobileEfficiencyCanvas" width="300" height="250"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
