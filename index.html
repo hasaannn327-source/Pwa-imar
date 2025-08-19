@@ -17,6 +17,13 @@
     
     <!-- CSS Dosyası -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    
+    <!-- Three.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
     <div class="container">
@@ -214,13 +221,50 @@
                 </div>
             </div>
 
-            <!-- Görselleştirme -->
+            <!-- 3D Görselleştirme -->
             <div class="panel">
-                <h3>🏗️ Yerleşim Planı</h3>
-                <div class="building-visual" id="buildingVisual">
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">🏗️</div>
-                        <p>Hesaplama sonrası<br>yerleşim planı görüntülenecek</p>
+                <h3>🏗️ 3D Bina Görselleştirme</h3>
+                <div class="visualization-tabs">
+                    <button class="viz-tab active" onclick="switchVisualization('3d')" data-tab="3d">
+                        🏗️ 3D Model
+                    </button>
+                    <button class="viz-tab" onclick="switchVisualization('charts')" data-tab="charts">
+                        📊 Grafikler
+                    </button>
+                </div>
+                
+                <div id="3d-container" class="visualization-content active">
+                    <div class="building-visual-3d" id="buildingVisual3D">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🏗️</div>
+                            <p>Hesaplama sonrası<br>3D model görüntülenecek</p>
+                        </div>
+                    </div>
+                    <div class="3d-controls" id="3d-controls" style="display: none;">
+                        <button onclick="reset3DView()" class="control-btn">🔄 Sıfırla</button>
+                        <button onclick="toggle3DWireframe()" class="control-btn">📐 Wireframe</button>
+                        <button onclick="toggle3DAnimation()" class="control-btn">▶️ Animasyon</button>
+                    </div>
+                </div>
+                
+                <div id="charts-container" class="visualization-content">
+                    <div class="charts-grid">
+                        <div class="chart-item">
+                            <h4>📊 Alan Dağılımı</h4>
+                            <canvas id="areaChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>🏢 Blok Analizi</h4>
+                            <canvas id="blockChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>🏠 Daire Dağılımı</h4>
+                            <canvas id="apartmentChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="chart-item">
+                            <h4>📈 Verimlilik Analizi</h4>
+                            <canvas id="efficiencyChart" width="300" height="200"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
