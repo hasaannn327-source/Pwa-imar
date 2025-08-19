@@ -206,8 +206,9 @@ async function initializeMapWithAlternatives() {
             center: [41.0082, 28.9784],
             zoom: 13
         });
-        console.log('✅ Leaflet haritası başarıyla yüklendi');
+        console.log('✅ Leaflet (OpenStreetMap) haritası başarıyla yüklendi');
         updateMapInfo('OpenStreetMap hazır', '-', '0');
+        showNotification('🗺️ OpenStreetMap haritası yüklendi - Ücretsiz ve açık kaynak!', 'success');
         return;
     } catch (error) {
         console.warn('⚠️ Leaflet yüklenemedi:', error.message);
@@ -361,7 +362,7 @@ function updateMapWithResults(blocks) {
     
     try {
         // Varsayılan merkez konum (İstanbul)
-        const defaultCenter = { lat: 41.0082, lng: 28.9784 };
+        const defaultCenter = [41.0082, 28.9784]; // Leaflet formatı [lat, lng]
         
         // Parsel çiz
         mapIntegration.drawParcelBoundaries(defaultCenter, projectResults.parselAlani, 'rectangle');
@@ -373,13 +374,19 @@ function updateMapWithResults(blocks) {
         
         // Harita bilgilerini güncelle
         updateMapInfo(
-            `${defaultCenter.lat.toFixed(6)}, ${defaultCenter.lng.toFixed(6)}`,
+            `${defaultCenter[0].toFixed(6)}, ${defaultCenter[1].toFixed(6)}`,
             `${projectResults.parselAlani.toFixed(0)} m²`,
             blocks ? blocks.length.toString() : '0'
         );
         
+        console.log('✅ Harita başarıyla güncellendi:', { 
+            parselAlani: projectResults.parselAlani, 
+            blokSayisi: blocks ? blocks.length : 0 
+        });
+        
     } catch (error) {
         console.error('❌ Harita güncelleme hatası:', error);
+        showNotification('⚠️ Harita güncellenirken hata oluştu', 'warning');
     }
 }
 
@@ -402,40 +409,56 @@ function updateMapInfo(coordinates, area, buildingCount) {
 // Harita event handlers
 async function handleAddressSearch() {
     const address = document.getElementById('addressSearch')?.value;
-    if (!address || !mapIntegration) return;
+    if (!address || !mapIntegration) {
+        showNotification('⚠️ Lütfen bir adres girin', 'warning');
+        return;
+    }
     
     try {
+        showNotification('🔍 Adres aranıyor...', 'info');
         const result = await mapIntegration.searchAddress(address);
         console.log('📍 Adres bulundu:', result);
         
+        // Koordinat formatını kontrol et
+        const lat = result.location.lat || result.location[0];
+        const lng = result.location.lng || result.location[1];
+        
         updateMapInfo(
-            `${result.location.lat.toFixed(6)}, ${result.location.lng.toFixed(6)}`,
+            `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
             '-',
             '-'
         );
         
-        showNotification('📍 Adres bulundu: ' + result.formattedAddress, 'success');
+        showNotification('📍 Adres bulundu!', 'success');
         
     } catch (error) {
         console.error('❌ Adres arama hatası:', error);
-        showNotification('❌ Adres bulunamadı', 'error');
+        showNotification('❌ Adres bulunamadı: ' + error.message, 'error');
     }
 }
 
 async function handleCurrentLocation() {
-    if (!mapIntegration) return;
+    if (!mapIntegration) {
+        showNotification('⚠️ Harita sistemi hazır değil', 'warning');
+        return;
+    }
     
     try {
+        showNotification('📍 Konum alınıyor...', 'info');
         const location = await mapIntegration.getCurrentLocation();
         console.log('📍 Mevcut konum alındı:', location);
         
+        // Koordinat formatını kontrol et
+        const lat = location.lat || location[0];
+        const lng = location.lng || location[1];
+        
         updateMapInfo(
-            `${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`,
+            `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
             '-',
             '-'
         );
         
-        showNotification('📍 Mevcut konumunuz bulundu', 'success');
+        showNotification('📍 Mevcut konumunuz bulundu!', 'success');
         
     } catch (error) {
         console.error('❌ Konum alma hatası:', error);

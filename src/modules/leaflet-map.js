@@ -164,13 +164,15 @@ export class LeafletMapIntegration {
     calculateRectangleCoordinates(center, area) {
         const sideLength = Math.sqrt(area);
         const latOffset = sideLength / 111320; // 1 derece ≈ 111.32 km
-        const lngOffset = sideLength / (111320 * Math.cos(center[0] * Math.PI / 180));
+        const centerLat = Array.isArray(center) ? center[0] : center.lat;
+        const centerLng = Array.isArray(center) ? center[1] : center.lng;
+        const lngOffset = sideLength / (111320 * Math.cos(centerLat * Math.PI / 180));
 
         return [
-            [center[0] - latOffset/2, center[1] - lngOffset/2],
-            [center[0] - latOffset/2, center[1] + lngOffset/2],
-            [center[0] + latOffset/2, center[1] + lngOffset/2],
-            [center[0] + latOffset/2, center[1] - lngOffset/2]
+            [centerLat - latOffset/2, centerLng - lngOffset/2],
+            [centerLat - latOffset/2, centerLng + lngOffset/2],
+            [centerLat + latOffset/2, centerLng + lngOffset/2],
+            [centerLat + latOffset/2, centerLng - lngOffset/2]
         ];
     }
 
