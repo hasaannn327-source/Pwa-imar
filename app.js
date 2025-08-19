@@ -516,6 +516,11 @@ function performCalculation() {
         updateAllCharts();
         update3DVisualization();
     }, 1000);
+    
+    // Auto-generate PDF after calculation (optional)
+    setTimeout(() => {
+        autoGeneratePDF();
+    }, 2000);
 }
 
 // Sonuçları UI'da göster
@@ -1194,60 +1199,64 @@ function exportToExcel() {
     }, 1000);
 }
 
-// Generate PDF content
+// Generate PDF content (simplified and clean)
 function generatePDFContent() {
     const currentDate = new Date().toLocaleDateString('tr-TR');
+    const currentTime = new Date().toLocaleTimeString('tr-TR');
     const city = document.getElementById('sehir').value;
+    const imarDurumu = document.getElementById('imarDurumu').options[document.getElementById('imarDurumu').selectedIndex].text;
     
-    return `🏗️ İMAR HESAPLAYICI PRO - DETAYLI RAPOR
-========================================
+    // Calculate totals
+    const totalApartments = blocks.reduce((total, block) => 
+        total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0);
+    
+    return `İMAR HESAPLAYICI PRO - HESAPLAMA RAPORU
+================================================
 
-📅 Rapor Tarihi: ${currentDate}
-📍 Şehir: ${city.toUpperCase()}
-🏷️ Proje ID: ${Date.now()}
+Rapor Tarihi: ${currentDate} ${currentTime}
+Şehir: ${city.toUpperCase()}
+İmar Durumu: ${imarDurumu}
 
-📋 PROJE BİLGİLERİ
-========================================
-• Parsel Alanı: ${projectResults.parselAlani.toFixed(2)} m²
-• TAKS (Taban Alanı Katsayısı): ${document.getElementById('taban').value}
-• KAKS (Kat Alanı Katsayısı): ${document.getElementById('emsal').value}
-• Kat Yüksekliği: ${document.getElementById('katYuksekligi').value} m
-• İmar Durumu: ${document.getElementById('imarDurumu').options[document.getElementById('imarDurumu').selectedIndex].text}
+TEMEL BİLGİLER
+================================================
+Parsel Alanı               : ${projectResults.parselAlani.toFixed(2)} m²
+TAKS Katsayısı             : ${document.getElementById('taban').value}
+KAKS Katsayısı             : ${document.getElementById('emsal').value}
+Kat Yüksekliği             : ${document.getElementById('katYuksekligi').value} m
 
-📊 HESAPLAMA SONUÇLARI
-========================================
-• Maksimum Taban Alanı: ${projectResults.maxTabanAlani.toFixed(2)} m²
-• Maksimum İnşaat Alanı: ${projectResults.maxInsaatAlani.toFixed(2)} m²
-• Maksimum Kat Sayısı: ${projectResults.maxKatSayisi} kat
-• Maksimum Yükseklik: ${projectResults.maxYukseklik.toFixed(1)} m
-• Açık Alan: ${projectResults.acikAlan.toFixed(2)} m²
-• Yapılaşma Oranı: %${projectResults.yapilasmaorani.toFixed(1)}
+HESAPLAMA SONUÇLARI
+================================================
+Maksimum Taban Alanı       : ${projectResults.maxTabanAlani.toFixed(2)} m²
+Maksimum İnşaat Alanı      : ${projectResults.maxInsaatAlani.toFixed(2)} m²
+Maksimum Kat Sayısı        : ${projectResults.maxKatSayisi} kat
+Maksimum Yükseklik         : ${projectResults.maxYukseklik.toFixed(1)} m
+Açık Alan                  : ${projectResults.acikAlan.toFixed(2)} m²
+Yapılaşma Oranı            : %${projectResults.yapilasmaorani.toFixed(1)}
 
-🏢 BLOK PLANLAMA DETAYLARI
-========================================
-Toplam Blok Sayısı: ${blocks.length}
-Toplam Daire Sayısı: ${blocks.reduce((total, block) => total + Object.values(block.apartments).reduce((sum, count) => sum + count, 0), 0)}
+BLOK PLANLAMA
+================================================
+Toplam Blok Sayısı         : ${blocks.length}
+Toplam Daire Sayısı        : ${totalApartments}
 
 ${blocks.map(block => {
     const apartmentList = Object.entries(block.apartments)
-        .map(([type, count]) => `  └─ ${type}: ${count} adet`)
-        .join('\n');
-    return `📦 Blok ${block.id} (${block.floors} kat - ${block.totalArea.toFixed(0)} m²)
-${apartmentList || '  └─ Daire planlaması henüz yapılmamış'}`;
-}).join('\n\n')}
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(', ');
+    return `Blok ${block.id}: ${block.floors} kat, ${block.totalArea.toFixed(0)} m² (${apartmentList || 'Planlanmamış'})`;
+}).join('\n')}
 
-📈 ÖZET VE ÖNERİLER
-========================================
-• Toplam kullanılabilir alan: ${projectResults.maxInsaatAlani.toFixed(0)} m²
-• Arsa kullanım verimliliği: %${((projectResults.maxInsaatAlani / projectResults.parselAlani) * 100).toFixed(1)}
-• Önerilen blok sayısı: ${blocks.length}
+ÖZET
+================================================
+Kullanılabilir İnşaat Alanı: ${projectResults.maxInsaatAlani.toFixed(0)} m²
+Arsa Kullanım Verimliliği  : %${((projectResults.maxInsaatAlani / projectResults.parselAlani) * 100).toFixed(1)}
+Açık Alan Oranı            : %${((projectResults.acikAlan / projectResults.parselAlani) * 100).toFixed(1)}
 
-⚠️  UYARI: Bu rapor bilgilendirme amaçlıdır. 
-    Resmi imar planlaması için yetkili kurumlara başvurunuz.
+================================================
+Bu rapor bilgilendirme amaçlıdır.
+Resmi imar planlaması için yetkili kurumlara başvurunuz.
 
-========================================
-Bu rapor İmar Hesaplayıcısı Pro v2.0.1 tarafından oluşturulmuştur.
-© 2025 İmar Hesaplayıcısı Pro - Tüm hakları saklıdır.`;
+İmar Hesaplayıcısı Pro v2.0.1
+© 2025 - Tüm hakları saklıdır`;
 }
 
 // Generate CSV data for Excel
@@ -1793,7 +1802,208 @@ function updateAllCharts() {
         createBlockChart();
         createApartmentChart();
         createEfficiencyChart();
+        
+        // Also create mobile charts
+        createMobileCharts();
     }, 500); // Small delay for smooth animation
+}
+
+// Create mobile-specific charts
+function createMobileCharts() {
+    // Mobile Area Chart
+    const mobileAreaCtx = document.getElementById('mobileAreaCanvas');
+    if (mobileAreaCtx) {
+        createMobileAreaChart();
+    }
+    
+    // Mobile Block Chart
+    const mobileBlockCtx = document.getElementById('mobileBlockCanvas');
+    if (mobileBlockCtx) {
+        createMobileBlockChart();
+    }
+    
+    // Mobile Apartment Chart
+    const mobileApartmentCtx = document.getElementById('mobileApartmentCanvas');
+    if (mobileApartmentCtx) {
+        createMobileApartmentChart();
+    }
+    
+    // Mobile Efficiency Chart
+    const mobileEfficiencyCtx = document.getElementById('mobileEfficiencyCanvas');
+    if (mobileEfficiencyCtx) {
+        createMobileEfficiencyChart();
+    }
+}
+
+// Mobile chart creation functions (optimized for mobile)
+function createMobileAreaChart() {
+    const ctx = document.getElementById('mobileAreaCanvas').getContext('2d');
+    
+    if (chartInstances.mobileAreaChart) {
+        chartInstances.mobileAreaChart.destroy();
+    }
+    
+    const data = {
+        labels: ['İnşaat Alanı', 'Açık Alan', 'Otopark', 'Yeşil Alan'],
+        datasets: [{
+            data: [
+                projectResults.maxInsaatAlani,
+                projectResults.acikAlan,
+                projectResults.maxInsaatAlani * 0.15,
+                projectResults.acikAlan * 0.6
+            ],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#22c55e'],
+            borderWidth: 0
+        }]
+    };
+
+    chartInstances.mobileAreaChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { padding: 10, font: { size: 12 } }
+                }
+            }
+        }
+    });
+}
+
+function createMobileBlockChart() {
+    const ctx = document.getElementById('mobileBlockCanvas').getContext('2d');
+    
+    if (chartInstances.mobileBlockChart) {
+        chartInstances.mobileBlockChart.destroy();
+    }
+    
+    const blockData = blocks.map(block => ({
+        label: `Blok ${block.id}`,
+        floors: block.floors,
+        apartments: Object.values(block.apartments).reduce((sum, count) => sum + count, 0)
+    }));
+
+    chartInstances.mobileBlockChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: blockData.map(b => b.label),
+            datasets: [{
+                label: 'Kat Sayısı',
+                data: blockData.map(b => b.floors),
+                backgroundColor: '#3b82f6'
+            }, {
+                label: 'Daire Sayısı',
+                data: blockData.map(b => b.apartments),
+                backgroundColor: '#f59e0b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' }
+            }
+        }
+    });
+}
+
+function createMobileApartmentChart() {
+    const ctx = document.getElementById('mobileApartmentCanvas').getContext('2d');
+    
+    if (chartInstances.mobileApartmentChart) {
+        chartInstances.mobileApartmentChart.destroy();
+    }
+    
+    const apartmentTotals = {};
+    blocks.forEach(block => {
+        Object.entries(block.apartments).forEach(([type, count]) => {
+            apartmentTotals[type] = (apartmentTotals[type] || 0) + count;
+        });
+    });
+
+    chartInstances.mobileApartmentChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(apartmentTotals),
+            datasets: [{
+                data: Object.values(apartmentTotals),
+                backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { padding: 10 } }
+            }
+        }
+    });
+}
+
+function createMobileEfficiencyChart() {
+    const ctx = document.getElementById('mobileEfficiencyCanvas').getContext('2d');
+    
+    if (chartInstances.mobileEfficiencyChart) {
+        chartInstances.mobileEfficiencyChart.destroy();
+    }
+    
+    const tabanKullanimOrani = (projectResults.maxTabanAlani / projectResults.parselAlani) * 100;
+    const emsalKullanimOrani = (projectResults.maxInsaatAlani / (projectResults.parselAlani * parseFloat(document.getElementById('emsal').value))) * 100;
+    const yukseklikVerimliligi = (projectResults.maxYukseklik / projectResults.maxYukseklikLimit) * 100;
+    const acikAlanOrani = (projectResults.acikAlan / projectResults.parselAlani) * 100;
+    const yapilasmaDengeisi = Math.min(100, (100 - Math.abs(tabanKullanimOrani - emsalKullanimOrani)));
+
+    chartInstances.mobileEfficiencyChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Taban Alan', 'Emsal', 'Yükseklik', 'Açık Alan', 'Denge'],
+            datasets: [{
+                label: 'Mevcut',
+                data: [tabanKullanimOrani, emsalKullanimOrani, yukseklikVerimliligi, acikAlanOrani, yapilasmaDengeisi],
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.2)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: { suggestedMin: 0, suggestedMax: 100 }
+            }
+        }
+    });
+}
+
+// Switch mobile chart
+function switchMobileChart(chartType) {
+    const mobileCharts = document.querySelectorAll('.mobile-single-chart .chart-item');
+    mobileCharts.forEach(chart => chart.classList.remove('active'));
+    
+    const targetChart = document.getElementById(`mobile${chartType.charAt(0).toUpperCase() + chartType.slice(1)}Chart`);
+    if (targetChart) {
+        targetChart.classList.add('active');
+    }
+}
+
+// Auto-generate PDF after calculation
+function autoGeneratePDF() {
+    if (!projectResults.parselAlani) return;
+    
+    try {
+        const pdfContent = generatePDFContent();
+        downloadTextFile(pdfContent, 'pdf');
+        
+        // Show success notification
+        showNotification('📄 Hesaplama raporu otomatik olarak indirildi!', 'success');
+        
+        console.log('Auto PDF generated successfully');
+    } catch (error) {
+        console.error('Auto PDF generation failed:', error);
+        // Don't show error to user for auto-generation, just log it
+    }
 }
 
 // Switch between 3D and Charts view

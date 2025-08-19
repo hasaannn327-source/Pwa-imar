@@ -248,7 +248,19 @@
                 </div>
                 
                 <div id="charts-container" class="visualization-content">
-                    <div class="charts-grid">
+                    <!-- Mobile Chart Selector -->
+                    <div class="mobile-chart-selector" id="mobileChartSelector">
+                        <label for="chartSelect">📊 Grafik Seçin:</label>
+                        <select id="chartSelect" onchange="switchMobileChart(this.value)">
+                            <option value="area">📊 Alan Dağılımı</option>
+                            <option value="block">🏢 Blok Analizi</option>
+                            <option value="apartment">🏠 Daire Dağılımı</option>
+                            <option value="efficiency">📈 Verimlilik Analizi</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Desktop Charts Grid -->
+                    <div class="charts-grid desktop-charts">
                         <div class="chart-item">
                             <h4>📊 Alan Dağılımı</h4>
                             <canvas id="areaChart" width="300" height="200"></canvas>
@@ -264,6 +276,26 @@
                         <div class="chart-item">
                             <h4>📈 Verimlilik Analizi</h4>
                             <canvas id="efficiencyChart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Single Chart Container -->
+                    <div class="mobile-single-chart" id="mobileSingleChart">
+                        <div class="chart-item active" id="mobileAreaChart">
+                            <h4>📊 Alan Dağılımı</h4>
+                            <canvas id="mobileAreaCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileBlockChart">
+                            <h4>🏢 Blok Analizi</h4>
+                            <canvas id="mobileBlockCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileApartmentChart">
+                            <h4>🏠 Daire Dağılımı</h4>
+                            <canvas id="mobileApartmentCanvas" width="300" height="250"></canvas>
+                        </div>
+                        <div class="chart-item" id="mobileEfficiencyChart">
+                            <h4>📈 Verimlilik Analizi</h4>
+                            <canvas id="mobileEfficiencyCanvas" width="300" height="250"></canvas>
                         </div>
                     </div>
                 </div>
