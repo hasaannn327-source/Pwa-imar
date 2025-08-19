@@ -196,3 +196,12 @@ export function debugApp() {
 	console.log('State:', state);
 }
 
+// Global export for inline handlers or console usage
+// Note: keep minimal globals for backward compatibility
+// eslint-disable-next-line no-undef
+window.updateBlockFloors = updateBlockFloors;
+// eslint-disable-next-line no-undef
+window.switchTab = switchTab;
+// eslint-disable-next-line no-undef
+window.debugApp = debugApp;
+

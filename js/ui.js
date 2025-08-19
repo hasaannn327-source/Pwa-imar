@@ -17,6 +17,10 @@ export function selectDefaultApartments() {
 	const apt3plus1 = document.querySelector('[data-type="3+1"]');
 	if (apt2plus1) apt2plus1.classList.add('selected');
 	if (apt3plus1) apt3plus1.classList.add('selected');
+	state.selectedApartmentTypes = [];
+	document.querySelectorAll('.apartment-type.selected').forEach(type => {
+		state.selectedApartmentTypes.push({ type: type.dataset.type, area: parseInt(type.dataset.area) });
+	});
 	displaySelectedApartments();
 	updateFloorPlan();
 }
