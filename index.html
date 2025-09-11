@@ -76,6 +76,11 @@
                     </div>
 
                     <div class="input-group">
+                        <label for="ortakOran">Ortak Alan Oranı (%)</label>
+                        <input type="number" id="ortakOran" name="ortakOran" min="0" max="50" step="0.1" value="2.0" placeholder="örn: 2">
+                    </div>
+
+                    <div class="input-group">
                         <label for="katYuksekligi">Kat Yüksekliği (m)</label>
                         <input type="number" id="katYuksekligi" name="katYuksekligi" min="2.5" max="4" step="0.1" value="3.0" placeholder="3.0">
                     </div>
@@ -127,6 +132,14 @@
                     <div class="result-item">
                         <span class="result-label">Max. İnşaat Alanı:</span>
                         <span class="result-value" id="maxInsaatAlani">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Net İnşaat Alanı:</span>
+                        <span class="result-value" id="netInsaatAlani">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Toplam Ortak Alan:</span>
+                        <span class="result-value" id="toplamOrtakAlan">-</span>
                     </div>
                     <div class="result-item">
                         <span class="result-label">Max. Kat Sayısı:</span>
@@ -237,4 +250,4 @@
     <!-- JavaScript Dosyası -->
     <script src="app.js"></script>
 </body>
-                </html>
+</html>

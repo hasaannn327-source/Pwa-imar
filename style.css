@@ -217,7 +217,7 @@ body {
     height: 300px;
     border: 2px solid #e5e7eb;
     border-radius: 10px;
-    background: #f0f8ff;
+    background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
     display: flex;
     align-items: center;
     justify-content: center;
